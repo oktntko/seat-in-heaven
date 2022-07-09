@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "vue": "^2.7.3",
+    "vue-draggable-resizable": "^2.3.0",
     "vue-router": "^3.5.4"
   },
   "devDependencies": {
