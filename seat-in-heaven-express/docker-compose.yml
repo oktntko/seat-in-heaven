@@ -1,0 +1,23 @@
+version: "3"
+services:
+  database:
+    container_name: sih-database
+    image: postgres:14.3
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      POSTGRES_PASSWORD: sih
+      POSTGRES_USER: sih
+      POSTGRES_DB: sih_db
+      TZ: "Asia/Tokyo"
+    restart: on-failure
+    volumes:
+      - sih-volume:/var/lib/postgresql/data
+    networks:
+      - sih-network
+
+volumes:
+  sih-volume:
+networks:
+  sih-network:
+    external: true
