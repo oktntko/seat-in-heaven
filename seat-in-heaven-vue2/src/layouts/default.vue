@@ -10,10 +10,10 @@
             <div class="mx-3 block h-6 w-px bg-gray-400 dark:bg-gray-700"></div>
           </li>
           <li>
-            <a href="#" class="mr-4 flex items-center hover:text-blue-100">
+            <RouterLink to="/login" class="mr-4 flex items-center hover:text-blue-100">
               <Icon class="mr-1 inline-flex" icon="fe:logout" />
               Logout
-            </a>
+            </RouterLink>
           </li>
         </ul>
       </div>
@@ -41,14 +41,14 @@
               </div>
             </li>
             <template v-for="menu in block.menu">
-              <li :key="menu.title">
-                <router-link
+              <li :key="menu.link">
+                <RouterLink
                   :to="menu.link"
                   class="text-white-600 hover:text-white-800 relative flex h-11 flex-row items-center border-l-4 border-transparent pr-6 hover:border-blue-500 hover:bg-blue-800 focus:outline-none dark:hover:border-gray-800 dark:hover:bg-gray-600"
                 >
                   <Icon class="ml-4 inline-flex items-center justify-center" :icon="menu.icon" />
                   <span class="ml-2 truncate text-sm tracking-wide">{{ menu.title }}</span>
-                </router-link>
+                </RouterLink>
               </li>
             </template>
           </template>
@@ -60,7 +60,7 @@
     <!-- ./Sidebar -->
 
     <div class="ml-14 mt-14 mb-10 h-full md:ml-64">
-      <router-view />
+      <RouterView />
     </div>
   </div>
 </template>
@@ -99,18 +99,7 @@ export default Vue.extend({
         },
         {
           block_title: "フロア管理",
-          menu: [
-            {
-              title: "15F",
-              link: "15",
-              icon: "15",
-            },
-            {
-              title: "16F",
-              link: "16",
-              icon: "16",
-            },
-          ],
+          menu: [],
         },
         {
           block_title: "システム管理",

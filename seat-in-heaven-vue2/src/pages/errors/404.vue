@@ -6,10 +6,10 @@ meta:
 <template>
   <section class="hero is-fullheight">
     <div class="hero-body">
-      <div class="container is-max-desktop">
+      <div class="is-max-desktop container">
         <section class="seciton has-text-centered">
           <p>ページが見つかりません。</p>
-          <router-link to="/">ホームに戻る</router-link>
+          <RouterLink to="/">ホームに戻る</RouterLink>
         </section>
       </div>
     </div>
