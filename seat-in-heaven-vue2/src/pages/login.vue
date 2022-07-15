@@ -7,12 +7,13 @@
             <div class="mt-6">
               <div class="text-center font-semibold uppercase text-black">seat in heaven</div>
 
-              <form class="mt-8">
+              <form class="mt-8" @submit.prevent="login">
                 <div class="mx-auto max-w-lg">
                   <div class="py-2">
                     <span class="px-1 text-sm text-gray-600">メールアドレス</span>
                     <input
-                      placeholder=""
+                      v-model="form.email"
+                      placeholder="example@example.com"
                       type="text"
                       class="text-md block w-full rounded-lg border-2 border-gray-300 bg-white px-3 py-2 placeholder-gray-600 shadow-md focus:border-gray-600 focus:bg-white focus:placeholder-gray-500 focus:outline-none"
                     />
@@ -21,7 +22,7 @@
                     <span class="px-1 text-sm text-gray-600">パスワード</span>
                     <div class="relative">
                       <input
-                        placeholder=""
+                        v-model="form.password"
                         :type="show ? 'text' : 'password'"
                         class="text-md block w-full rounded-lg border-2 border-gray-300 bg-white px-3 py-2 placeholder-gray-600 shadow-md focus:border-gray-600 focus:bg-white focus:placeholder-gray-500 focus:outline-none"
                       />
@@ -45,6 +46,7 @@
                     </label>
                   </div>
                   <button
+                    type="submit"
                     class="mt-3 block w-full rounded-lg bg-gray-800 px-6 py-3 text-lg font-semibold text-white shadow-xl hover:bg-black hover:text-white"
                   >
                     ログイン
@@ -61,12 +63,22 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { api } from "~/repositories/api";
 
 export default Vue.extend({
   data() {
     return {
       show: false,
+      form: {
+        email: "",
+        password: "",
+      },
     };
+  },
+  methods: {
+    login() {
+      api.post.auth(this.form).then(() => this.$router.push({ name: "index" }));
+    },
   },
 });
 </script>

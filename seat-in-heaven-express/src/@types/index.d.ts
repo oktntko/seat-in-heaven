@@ -3,3 +3,5 @@ type RequireOne<T, K extends keyof T = keyof T> = K extends keyof T ? PartialReq
 type PartialRequire<O, K extends keyof O> = {
   [P in K]-?: O[P];
 } & O;
+
+type Pager = { limit: number; offset: number };

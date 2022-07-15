@@ -8,13 +8,18 @@
     "lint": "eslint --ext .js,.ts,.vue src"
   },
   "dependencies": {
+    "axios": "^0.27.2",
+    "qs": "^6.11.0",
     "vue": "^2.7.3",
     "vue-draggable-resizable": "^2.3.0",
-    "vue-router": "^3.5.4"
+    "vue-router": "^3.5.4",
+    "vxe-table": "^3.5.9",
+    "xe-utils": "^3.5.4"
   },
   "devDependencies": {
     "@iconify/vue2": "^1.2.1",
     "@types/node": "^18.0.3",
+    "@types/qs": "^6.9.7",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
     "autoprefixer": "^10.4.7",
