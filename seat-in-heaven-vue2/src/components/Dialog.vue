@@ -36,9 +36,30 @@
               <div class="sm:flex sm:items-start">
                 <div
                   v-if="icon"
-                  :class="`mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-${color}-100 sm:mx-0 sm:h-10 sm:w-10`"
+                  class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10"
+                  :class="
+                    color === 'green'
+                      ? 'bg-green-100'
+                      : color === 'yellow'
+                      ? 'bg-yellow-100'
+                      : color === 'red'
+                      ? 'bg-red-100'
+                      : 'bg-blue-100'
+                  "
                 >
-                  <Icon :class="`h-6 w-6 text-${color}-600`" :icon="icon" />
+                  <Icon
+                    class="h-6 w-6"
+                    :class="
+                      color === 'green'
+                        ? 'text-green-600'
+                        : color === 'yellow'
+                        ? 'text-yellow-600'
+                        : color === 'red'
+                        ? 'text-red-600'
+                        : 'text-blue-600'
+                    "
+                    :icon="icon"
+                  />
                 </div>
                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                   <h3
@@ -60,7 +81,16 @@
               <button
                 ref="refConfirmButton"
                 type="button"
-                :class="`inline-flex min-w-[120px] justify-center rounded-md border border-transparent bg-${color}-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-${color}-700 focus:outline-none sm:ml-3 sm:w-auto sm:translate-y-0 sm:scale-95 sm:text-sm`"
+                class="inline-flex min-w-[120px] justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none sm:ml-3 sm:w-auto sm:translate-y-0 sm:scale-95 sm:text-sm"
+                :class="
+                  color === 'green'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : color === 'yellow'
+                    ? 'bg-yellow-600 hover:bg-yellow-700'
+                    : color === 'red'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                "
                 @click="confirm"
               >
                 {{ confirmText }}
@@ -69,7 +99,7 @@
                 v-if="canCancel.button"
                 ref="refCancelButton"
                 type="button"
-                class="mt-3 inline-flex min-w-[120px] justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                class="mt-3 inline-flex min-w-[120px] justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 @click="handleCancelButtonClicked"
               >
                 {{ cancelText }}
