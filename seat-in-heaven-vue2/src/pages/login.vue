@@ -38,7 +38,6 @@
                   <div class="flex justify-end">
                     <label class="my-4 block text-gray-500">
                       <a
-                        href="#"
                         class="cursor-pointer border-b-2 border-gray-200 tracking-tighter hover:border-gray-400"
                       >
                         <span>パスワードを忘れてしまった</span>

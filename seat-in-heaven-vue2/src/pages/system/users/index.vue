@@ -4,9 +4,7 @@
     <nav class="mb-8 flex" aria-label="Breadcrumb">
       <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
-          <p
-            class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-          >
+          <p class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-400">
             <Icon class="mr-2 h-4 w-4" icon="clarity:users-solid" />
             ユーザ管理
           </p>
@@ -14,10 +12,7 @@
         <li>
           <div class="flex items-center">
             <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
-            <p
-              href="#"
-              class="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white md:ml-2"
-            >
+            <p class="ml-1 text-sm font-medium text-gray-700 dark:text-gray-400 md:ml-2">
               ユーザ一覧
             </p>
           </div>
@@ -100,8 +95,17 @@
     <!-- 検索結果 -->
     <div class="mb-8">
       <vxe-table :data="table.data">
-        <vxe-column type="seq" width="60"></vxe-column>
-        <vxe-column field="email" title="メールアドレス"></vxe-column>
+        <vxe-column type="seq" width="72" align="right"></vxe-column>
+        <vxe-column field="email" title="メールアドレス">
+          <template #default="{ row }">
+            <RouterLink
+              :to="`/system/users/${row.user_id}`"
+              class="text-blue-700 hover:text-blue-800"
+            >
+              {{ row.email }}
+            </RouterLink>
+          </template>
+        </vxe-column>
         <vxe-column field="username" title="ユーザ名"></vxe-column>
         <vxe-column field="role" title="ロール"></vxe-column>
         <template #empty
