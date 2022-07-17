@@ -116,7 +116,7 @@
 import Vue, { PropType } from "vue";
 
 type DialogProps = Partial<{
-  type: string;
+  colorset: string;
   icon: string;
   title: string;
   message: string;
@@ -132,7 +132,7 @@ type DialogProps = Partial<{
 
 const Dialog = Vue.extend({
   props: {
-    type: {
+    colorset: {
       type: String,
       required: false,
       default: "info",
@@ -192,11 +192,11 @@ const Dialog = Vue.extend({
   },
   computed: {
     color(): string {
-      if (this.type === "success") {
+      if (this.colorset === "success") {
         return "green";
-      } else if (this.type === "warning") {
+      } else if (this.colorset === "warning") {
         return "yellow";
-      } else if (this.type === "danger") {
+      } else if (this.colorset === "danger") {
         return "red";
       } else {
         return "blue";

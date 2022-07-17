@@ -81,7 +81,7 @@
         <button
           v-if="userId"
           type="button"
-          class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-yellow-600 py-2.5 px-5 text-sm font-medium text-white transition-all hover:bg-yellow-700 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
+          class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-yellow-400 py-2.5 px-5 text-sm font-medium text-gray-800 transition-all hover:bg-yellow-500 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
           @click="handleDelete"
         >
           <Icon class="mr-2 h-4 w-4" icon="bi:trash3-fill" />
@@ -102,6 +102,7 @@
 <script lang="ts">
 import Vue from "vue";
 import * as dialog from "~/components/Dialog.vue";
+import * as toast from "~/components/Toast.vue";
 import { api } from "~/repositories/api";
 
 export default Vue.extend({
@@ -139,7 +140,7 @@ export default Vue.extend({
       if (this.userId) {
         dialog
           .open({
-            type: "danger",
+            colorset: "danger",
             icon: "bx:error",
             message: `${this.form.username}を削除します。この操作は取り消せません。よろしいですか？`,
           })
@@ -153,15 +154,22 @@ export default Vue.extend({
       api.get.user({ user_id }).then(({ data }) => (this.form = data));
     },
     postUser() {
-      api.post
-        .user(this.form)
-        .then(({ data }) => this.$router.replace(`/system/users/${data.user_id}`));
+      api.post.user(this.form).then(({ data }) => {
+        toast.open({ type: "success", message: "登録に成功しました" });
+        this.$router.replace(`/system/users/${data.user_id}`);
+      });
     },
     putUser(user_id: string) {
-      api.put.user({ user_id }, this.form).then(({ data }) => (this.form = data));
+      api.put.user({ user_id }, this.form).then(({ data }) => {
+        toast.open({ type: "success", message: "保存に成功しました" });
+        this.form = data;
+      });
     },
     deleteUser(user_id: string) {
-      api.delete.user({ user_id }, this.form).then(() => this.$router.replace(`/system/users`));
+      api.delete.user({ user_id }, this.form).then(() => {
+        toast.open({ type: "success", message: "削除に成功しました" });
+        this.$router.replace(`/system/users`);
+      });
     },
   },
 });

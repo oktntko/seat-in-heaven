@@ -21,7 +21,7 @@ export default Vue.extend({
           console.error(error);
 
           const status = error.response?.status ?? 0;
-          const type =
+          const colorset =
             0 < status && status < 400
               ? "info"
               : 400 <= status && status < 500
@@ -29,8 +29,8 @@ export default Vue.extend({
               : "danger";
 
           dialog.open({
-            type,
-            icon: type === "info" ? "bx:info-circle" : "bx:error",
+            colorset,
+            icon: colorset === "info" ? "bx:info-circle" : "bx:error",
             message: error.response?.data.message,
             confirmText: "OK",
             canCancel: {
