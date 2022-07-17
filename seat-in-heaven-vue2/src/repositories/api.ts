@@ -19,7 +19,7 @@ const users = {
     },
   },
   post: {
-    users: async (
+    user: async (
       body: paths["/api/users"]["post"]["requestBody"]["content"]["application/json"]
     ) => {
       return client.post<
@@ -28,7 +28,7 @@ const users = {
     },
   },
   put: {
-    users: async (
+    user: async (
       path: paths["/api/users/{user_id}"]["put"]["parameters"]["path"],
       body: paths["/api/users/{user_id}"]["put"]["requestBody"]["content"]["application/json"]
     ) => {
@@ -38,7 +38,7 @@ const users = {
     },
   },
   delete: {
-    users: async (
+    user: async (
       path: paths["/api/users/{user_id}"]["delete"]["parameters"]["path"],
       query: paths["/api/users/{user_id}"]["delete"]["parameters"]["query"]
     ) => {

@@ -77,13 +77,22 @@
           </label>
         </div>
       </div>
-      <div class="flex justify-end">
+      <div class="flex justify-end gap-4">
+        <button
+          v-if="userId"
+          type="button"
+          class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-yellow-600 py-2.5 px-5 text-sm font-medium text-white transition-all hover:bg-yellow-700 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
+          @click="handleDelete"
+        >
+          <Icon class="mr-2 h-4 w-4" icon="bi:trash3-fill" />
+          削除
+        </button>
         <button
           type="submit"
-          class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-blue-700 py-2.5 px-5 text-sm font-medium text-white transition-all hover:bg-blue-800 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
+          class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-green-600 py-2.5 px-5 text-sm font-medium text-white transition-all hover:bg-green-700 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
         >
-          <Icon class="mx-1 h-4 w-4" icon="fa:search" />
-          検索
+          <Icon class="mr-2 h-4 w-4" icon="akar-icons:check-box" />
+          {{ userId ? "保存" : "登録" }}
         </button>
       </div>
     </form>
@@ -92,6 +101,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import * as dialog from "~/components/Dialog.vue";
 import { api } from "~/repositories/api";
 
 export default Vue.extend({
@@ -120,20 +130,38 @@ export default Vue.extend({
   methods: {
     handleSubmit() {
       if (this.userId) {
-        this.puUsers(this.userId);
+        this.putUser(this.userId);
       } else {
-        this.postUsers();
+        this.postUser();
+      }
+    },
+    handleDelete() {
+      if (this.userId) {
+        dialog
+          .open({
+            type: "danger",
+            icon: "bx:error",
+            message: `${this.form.username}を削除します。この操作は取り消せません。よろしいですか？`,
+          })
+          .then(() => {
+            this.deleteUser(this.userId);
+          });
       }
     },
 
     getUser(user_id: string) {
       api.get.user({ user_id }).then(({ data }) => (this.form = data));
     },
-    postUsers() {
-      api.post.users(this.form).then(({ data }) => (this.form = data));
+    postUser() {
+      api.post
+        .user(this.form)
+        .then(({ data }) => this.$router.replace(`/system/users/${data.user_id}`));
     },
-    puUsers(user_id: string) {
-      api.put.users({ user_id }, this.form).then(({ data }) => (this.form = data));
+    putUser(user_id: string) {
+      api.put.user({ user_id }, this.form).then(({ data }) => (this.form = data));
+    },
+    deleteUser(user_id: string) {
+      api.delete.user({ user_id }, this.form).then(() => this.$router.replace(`/system/users`));
     },
   },
 });

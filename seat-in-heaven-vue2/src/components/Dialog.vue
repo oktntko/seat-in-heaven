@@ -157,12 +157,12 @@ const Dialog = Vue.extend({
     confirmText: {
       type: String,
       required: false,
-      default: "Confirm",
+      default: "OK",
     },
     cancelText: {
       type: String,
       required: false,
-      default: "Cancel",
+      default: "やめる",
     },
     canCancel: {
       type: Object as PropType<{
@@ -258,9 +258,9 @@ export function open(propsData: DialogProps) {
   parent.appendChild(instance.$el);
   document.body.appendChild(parent);
 
-  return new Promise((resolve) => {
-    instance.$on("confirm", () => resolve({ result: true }));
-    instance.$on("cancel", () => resolve({ result: false }));
+  return new Promise<{ ok: true }>((resolve, reject) => {
+    instance.$on("confirm", () => resolve({ ok: true }));
+    instance.$on("cancel", () => reject({ ok: false }));
   }).finally(() => {
     instance.$destroy();
     document.body.removeChild(parent);
