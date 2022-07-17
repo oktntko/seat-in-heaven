@@ -180,7 +180,7 @@ const Dialog = Vue.extend({
 
     this.$nextTick(() => {
       // $nextTick を入れないとフォーカスが移動しない
-      if (this.focusOn === "Confirm") {
+      if (this.focusOn === "Confirm" || !this.canCancel.button) {
         (this.$refs.refConfirmButton as HTMLButtonElement).focus();
       } else {
         (this.$refs.refCancelButton as HTMLButtonElement).focus();
