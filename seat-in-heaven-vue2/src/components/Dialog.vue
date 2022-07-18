@@ -250,22 +250,23 @@ const Dialog = Vue.extend({
 
 export default Dialog;
 
-export function open(propsData: DialogProps) {
-  const ComponentClass = Vue.extend(Dialog);
-  const instance = new ComponentClass({ propsData }).$mount();
-  const parent = document.createElement("div");
+export const $dialog = {
+  open(propsData: DialogProps) {
+    const instance = new Dialog({ propsData }).$mount();
+    const parent = document.createElement("div");
 
-  parent.appendChild(instance.$el);
-  document.body.appendChild(parent);
+    parent.appendChild(instance.$el);
+    document.body.appendChild(parent);
 
-  return new Promise<{ ok: true }>((resolve, reject) => {
-    instance.$on("confirm", () => resolve({ ok: true }));
-    instance.$on("cancel", () => reject({ ok: false }));
-  }).finally(() => {
-    instance.$destroy();
-    document.body.removeChild(parent);
-  });
-}
+    return new Promise<{ ok: true }>((resolve, reject) => {
+      instance.$on("confirm", () => resolve({ ok: true }));
+      instance.$on("cancel", () => reject({ ok: false }));
+    }).finally(() => {
+      instance.$destroy();
+      document.body.removeChild(parent);
+    });
+  },
+};
 </script>
 
 <style scoped></style>

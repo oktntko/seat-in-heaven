@@ -101,8 +101,9 @@
 
 <script lang="ts">
 import Vue from "vue";
-import * as dialog from "~/components/Dialog.vue";
-import * as toast from "~/components/Toast.vue";
+import { $dialog } from "~/components/Dialog.vue";
+import { $toast } from "~/components/Toast.vue";
+import { $loading } from "~/components/Loading.vue";
 import { api } from "~/repositories/api";
 
 export default Vue.extend({
@@ -138,7 +139,7 @@ export default Vue.extend({
     },
     handleDelete() {
       if (this.userId) {
-        dialog
+        $dialog
           .open({
             colorset: "danger",
             icon: "bx:error",
@@ -151,23 +152,27 @@ export default Vue.extend({
     },
 
     getUser(user_id: string) {
-      api.get.user({ user_id }).then(({ data }) => (this.form = data));
+      const loading = $loading.open();
+      api.get
+        .user({ user_id })
+        .then(({ data }) => (this.form = data))
+        .finally(loading.close);
     },
     postUser() {
       api.post.user(this.form).then(({ data }) => {
-        toast.open({ type: "success", message: "登録に成功しました" });
+        $toast.open({ type: "success", message: "登録に成功しました" });
         this.$router.replace(`/system/users/${data.user_id}`);
       });
     },
     putUser(user_id: string) {
       api.put.user({ user_id }, this.form).then(({ data }) => {
-        toast.open({ type: "success", message: "保存に成功しました" });
+        $toast.open({ type: "success", message: "保存に成功しました" });
         this.form = data;
       });
     },
     deleteUser(user_id: string) {
       api.delete.user({ user_id }, this.form).then(() => {
-        toast.open({ type: "success", message: "削除に成功しました" });
+        $toast.open({ type: "success", message: "削除に成功しました" });
         this.$router.replace(`/system/users`);
       });
     },

@@ -127,42 +127,43 @@ const Toast = Vue.extend({
 
 export default Toast;
 
-export function open(propsData: ToastProps) {
-  const ComponentClass = Vue.extend(Toast);
-  const instance = new ComponentClass({ propsData }).$mount();
-  const parent = document.createElement("div");
+export const $toast = {
+  open(propsData: ToastProps) {
+    const instance = new Toast({ propsData }).$mount();
+    const parent = document.createElement("div");
 
-  parent.appendChild(instance.$el);
+    parent.appendChild(instance.$el);
 
-  let container = document.getElementById("toast-container");
-  if (container) {
-    container.appendChild(parent);
-  } else {
-    container = document.createElement("div");
-    container.setAttribute("id", "toast-container");
-
-    container.style.position = "fixed";
-    container.style.zIndex = "10";
-    container.style.bottom = "3rem";
-    container.style.left = "50%";
-
-    container.appendChild(parent);
-    document.body.appendChild(container);
-  }
-
-  return new Promise<{ ok: true }>((resolve) => {
-    instance.$on("close", () => resolve({ ok: true }));
-  }).finally(() => {
-    instance.$destroy();
+    let container = document.getElementById("toast-container");
     if (container) {
-      container.removeChild(parent);
+      container.appendChild(parent);
+    } else {
+      container = document.createElement("div");
+      container.setAttribute("id", "toast-container");
 
-      if (!container.hasChildNodes()) {
-        document.body.removeChild(container);
-      }
+      container.style.position = "fixed";
+      container.style.zIndex = "10";
+      container.style.bottom = "3rem";
+      container.style.left = "50%";
+
+      container.appendChild(parent);
+      document.body.appendChild(container);
     }
-  });
-}
+
+    return new Promise<{ ok: true }>((resolve) => {
+      instance.$on("close", () => resolve({ ok: true }));
+    }).finally(() => {
+      instance.$destroy();
+      if (container) {
+        container.removeChild(parent);
+
+        if (!container.hasChildNodes()) {
+          document.body.removeChild(container);
+        }
+      }
+    });
+  },
+};
 </script>
 
 <style scoped></style>
