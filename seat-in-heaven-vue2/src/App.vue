@@ -5,7 +5,7 @@
 <script lang="ts">
 import axios, { AxiosError } from "axios";
 import Vue from "vue";
-import * as dialog from "~/components/Dialog.vue";
+import { $dialog } from "~/components/Dialog.vue";
 
 export default Vue.extend({
   mounted() {
@@ -28,7 +28,7 @@ export default Vue.extend({
               ? "warning"
               : "danger";
 
-          dialog.open({
+          $dialog.open({
             colorset,
             icon: colorset === "info" ? "bx:info-circle" : "bx:error",
             message: error.response?.data.message,
