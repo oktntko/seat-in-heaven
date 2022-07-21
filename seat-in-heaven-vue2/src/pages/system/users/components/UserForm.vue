@@ -84,7 +84,7 @@
           class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-yellow-400 py-2.5 px-5 text-sm font-medium text-gray-800 transition-all hover:bg-yellow-500 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
           @click="handleDelete"
         >
-          <Icon class="mr-2 h-4 w-4" icon="bi:trash3-fill" />
+          <Icon class="mr-2 h-4 w-4" icon="bx:trash" />
           削除
         </button>
         <button
