@@ -12,24 +12,29 @@
       :icon="isFloor ? 'bxs:folder' : 'ant-design:file-outlined'"
     />
     <!-- フロア名 -->
-    <p class="flex-grow truncate p-1">{{ node.name }}</p>
+    <RouterLink
+      v-if="isFloor"
+      :to="{
+        path: `/system/floors`,
+        query: { floor_id: floor.floor_id },
+      }"
+      class="flex-grow cursor-pointer truncate p-1 text-blue-700 hover:text-blue-900"
+    >
+      {{ floor.floorname }}
+    </RouterLink>
+    <p v-else class="flex-grow truncate p-1">
+      {{ floor.floorname }}
+    </p>
     <!-- 追加 -->
     <button
       v-if="isFloor"
       class="flex flex-row flex-nowrap items-center gap-1"
-      @click="addFloor(node.children)"
+      @click="addChild(floor)"
     >
       <Icon class="h-5 w-5" icon="bx:folder-plus" />
     </button>
-    <button
-      v-if="isFloor"
-      class="flex flex-row flex-nowrap items-center gap-1"
-      @click="addRoom(node.children)"
-    >
-      <Icon class="h-5 w-5" icon="ant-design:file-add-outlined" />
-    </button>
     <!-- 削除 -->
-    <button class="flex flex-row flex-nowrap items-center gap-1" @click="trash(node)">
+    <button class="flex flex-row flex-nowrap items-center gap-1" @click="trash(floor)">
       <Icon class="h-5 w-5 cursor-pointer" icon="bx:trash" />
     </button>
   </div>
@@ -37,29 +42,26 @@
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
-import type { FloorNode } from "~/pages/system/floors/components/FloorTree.vue";
+import { components } from "~/repositories/schema";
 
 export default Vue.extend({
   props: {
-    node: {
+    floor: {
       required: true,
-      type: Object as PropType<FloorNode>,
+      type: Object as PropType<components["schemas"]["FloorResponse"]>,
     },
   },
   computed: {
     isFloor(): boolean {
-      return this.node.type === "floor";
+      return this.floor.floortype === "FLOOR";
     },
   },
   methods: {
-    addFloor(list: FloorNode[]) {
-      this.$emit("addFloor", list);
+    addChild(parent: components["schemas"]["FloorResponse"]) {
+      this.$emit("addChild", parent);
     },
-    addRoom(list: FloorNode[]) {
-      this.$emit("addRoom", list);
-    },
-    trash(node: FloorNode) {
-      this.$emit("trash", node);
+    trash(floor: components["schemas"]["FloorResponse"]) {
+      this.$emit("trash", floor);
     },
   },
 });

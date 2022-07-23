@@ -33,7 +33,7 @@ import { UsersService } from "~/services/users.service";
 import { CurrentUserType } from "~/types";
 
 // ::: REQUEST
-class UsersBody {
+class UserBody {
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
@@ -42,7 +42,7 @@ class UsersBody {
 
   @IsNotEmpty()
   @IsString()
-  @MaxLength(100)
+  @MaxLength(50)
   username: string;
 
   @IsNotEmpty()
@@ -51,7 +51,7 @@ class UsersBody {
   role: Role;
 }
 
-class UsersPathParams {
+class UserPathParams {
   @IsPositive()
   user_id: number;
 }
@@ -92,7 +92,7 @@ class UserResponse {
 
   @IsNotEmpty()
   @IsString()
-  @MaxLength(100)
+  @MaxLength(50)
   username: string;
 
   @IsNotEmpty()
@@ -121,7 +121,7 @@ export class UsersController {
   @ResponseSchema(UserResponse)
   async postUser(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Body({ required: true }) body: UsersBody
+    @Body({ required: true }) body: UserBody
   ): Promise<UserResponse> {
     log.debug(currentUser, body);
 
@@ -145,8 +145,8 @@ export class UsersController {
   @ResponseSchema(UserResponse)
   async putUser(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Params({ required: true }) path: UsersPathParams,
-    @Body({ required: true }) body: UsersBody,
+    @Params({ required: true }) path: UserPathParams,
+    @Body({ required: true }) body: UserBody,
     @BodyParam("updated_at", { required: true }) updated_at: string
   ): Promise<UserResponse> {
     log.debug(currentUser, body);
@@ -159,7 +159,7 @@ export class UsersController {
   @ResponseSchema(UserResponse)
   async getUser(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Params({ required: true }) path: UsersPathParams
+    @Params({ required: true }) path: UserPathParams
   ): Promise<UserResponse> {
     log.debug(currentUser);
 
@@ -171,7 +171,7 @@ export class UsersController {
   @ResponseSchema(UserResponse)
   async deleteUser(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Params({ required: true }) path: UsersPathParams,
+    @Params({ required: true }) path: UserPathParams,
     @QueryParam("updated_at", { required: true }) updated_at: string
   ): Promise<UserResponse> {
     log.debug(currentUser);

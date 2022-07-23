@@ -13,6 +13,12 @@ enum Role {
   USER
 }
 
+enum FloorType {
+  ROOT
+  FLOOR
+  ROOM
+}
+
 /// ユーザ
 model User {
   user_id  Int    @id @default(autoincrement())
@@ -39,4 +45,35 @@ model Session {
   updated_at DateTime @updatedAt @db.Timestamptz(3)
 
   @@map("sessions")
+}
+
+model Floor {
+  floor_id  Int       @id @default(autoincrement())
+  floortype FloorType
+  floorname String    @db.VarChar(50)
+  order     Int
+
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  created_by Int
+  updated_at DateTime @updatedAt @db.Timestamptz(3)
+  updated_by Int
+
+  descendants Floornode[] @relation("ancestors")
+  ancestors   Floornode[] @relation("descendants")
+
+  @@index([floorname], name: "index_floorname")
+  @@map("floors")
+}
+
+model Floornode {
+  id            Int @id @default(autoincrement())
+  ancestor_id   Int /// 祖先ID
+  descendant_id Int /// 子孫ID
+  distance      Int /// 祖先と子孫の距離
+
+  ancestor   Floor @relation(name: "ancestors", fields: [ancestor_id], references: [floor_id], onDelete: Cascade)
+  descendant Floor @relation(name: "descendants", fields: [descendant_id], references: [floor_id], onDelete: Cascade)
+
+  @@unique([ancestor_id, descendant_id])
+  @@map("floornodes")
 }

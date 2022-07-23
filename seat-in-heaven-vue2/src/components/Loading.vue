@@ -19,8 +19,8 @@
           class="h-16 w-16 text-gray-600 text-opacity-60 dark:text-gray-800 dark:text-opacity-60"
         />
         <span class="sr-only">Loading...</span>
+        <input ref="refHinddenInput" type="hidden" />
       </div>
-      <input ref="refHinddenInput" type="hidden" />
     </transition>
   </div>
 </template>

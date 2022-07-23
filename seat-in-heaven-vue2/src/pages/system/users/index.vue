@@ -168,7 +168,7 @@ export default Vue.extend({
       },
       table: {
         loading: true,
-        data: [] as components["schemas"]["UsersBody"][],
+        data: [] as components["schemas"]["UserBody"][],
         total: 0,
         pageSize: 20,
         currentPage: 1,

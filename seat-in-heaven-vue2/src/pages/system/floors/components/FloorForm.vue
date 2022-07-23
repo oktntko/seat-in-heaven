@@ -2,80 +2,55 @@
   <!-- フォーム -->
   <div class="container mx-auto md:my-4 md:max-w-3xl md:px-4">
     <form
-      class="w-full rounded-xl border border-gray-200 bg-white p-8 dark:border-gray-600 dark:bg-gray-700"
+      class="w-full rounded-xl bg-white p-8 dark:border-gray-600 dark:bg-gray-700"
       @submit.prevent="handleSubmit"
     >
-      <div class="mb-6">
-        <label for="email" class="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300">
-          メールアドレス
-        </label>
-        <input
-          id="email"
-          v-model="form.email"
-          type="email"
-          class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500"
-          placeholder="example@example.com"
-          required
-        />
+      <div class="mb-6 flex items-start">
+        <div class="mr-4 flex items-center">
+          <input
+            id="floortype-FLOOR"
+            v-model="form.floortype"
+            type="radio"
+            value="FLOOR"
+            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
+          />
+          <label
+            for="floortype-FLOOR"
+            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+          >
+            フロア
+          </label>
+        </div>
+        <div class="mr-4 flex items-center">
+          <input
+            id="floortype-ROOM"
+            v-model="form.floortype"
+            type="radio"
+            value="ROOM"
+            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
+          />
+          <label
+            for="floortype-ROOM"
+            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+          >
+            居室
+          </label>
+        </div>
       </div>
       <div class="mb-6">
         <label
-          for="username"
+          for="floorname"
           class="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300"
         >
-          ユーザ名
+          名前
         </label>
         <input
-          id="username"
-          v-model="form.username"
+          id="floorname"
+          v-model="form.floorname"
           type="text"
           class="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500"
           required
         />
-      </div>
-      <div class="mb-6 flex items-start">
-        <div class="mr-4 flex items-center">
-          <input
-            id="role-SYSTEM_ADMIN"
-            v-model="form.role"
-            type="radio"
-            value="SYSTEM_ADMIN"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
-          />
-          <label
-            for="role-SYSTEM_ADMIN"
-            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-          >
-            システム管理者
-          </label>
-        </div>
-        <div class="mr-4 flex items-center">
-          <input
-            id="role-LIMITED_ADMIN"
-            v-model="form.role"
-            type="radio"
-            value="LIMITED_ADMIN"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
-          />
-          <label
-            for="role-LIMITED_ADMIN"
-            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-          >
-            フロア責任者
-          </label>
-        </div>
-        <div class="mr-4 flex items-center">
-          <input
-            id="role-USER"
-            v-model="form.role"
-            type="radio"
-            value="USER"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
-          />
-          <label for="role-USER" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-            一般ユーザ
-          </label>
-        </div>
       </div>
       <div class="flex justify-end gap-4">
         <button
@@ -108,72 +83,75 @@ import { api } from "~/repositories/api";
 
 export default Vue.extend({
   props: {
-    userId: {
+    floorId: {
       type: String,
       required: false,
       default: "",
+    },
+    parentId: {
+      type: Number,
+      required: true,
     },
   },
   data() {
     return {
       form: {
-        email: "",
-        username: "",
-        role: "USER" as "SYSTEM_ADMIN" | "LIMITED_ADMIN" | "USER",
+        floortype: "FLOOR" as "FLOOR" | "ROOM",
+        floorname: "",
         updated_at: "",
       },
     };
   },
   created() {
-    if (this.userId) {
-      this.getUser(this.userId);
+    if (this.floorId) {
+      this.getFloor(this.floorId);
     }
   },
   methods: {
     handleSubmit() {
-      if (this.userId) {
-        this.putUser(this.userId);
+      if (this.floorId) {
+        this.putFloor(this.floorId);
       } else {
-        this.postUser();
+        this.postFloor();
       }
     },
     handleDelete() {
-      if (this.userId) {
+      if (this.floorId) {
         $dialog
           .open({
             colorset: "danger",
             icon: "bx:error",
-            message: `${this.form.username}を削除します。この操作は取り消せません。よろしいですか？`,
+            message: `${this.form.floorname}を削除します。この操作は取り消せません。よろしいですか？`,
           })
           .then(() => {
-            this.deleteUser(this.userId);
+            this.deleteFloor(this.floorId);
           });
       }
     },
 
-    getUser(user_id: string) {
+    getFloor(floor_id: string) {
       const loading = $loading.open();
       api.get
-        .user({ user_id })
+        .floor({ floor_id })
         .then(({ data }) => (this.form = data))
         .finally(loading.close);
     },
-    postUser() {
-      api.post.user(this.form).then(({ data }) => {
+    postFloor() {
+      api.post.floor({ ...this.form, parent_id: this.parentId }).then(({ data }) => {
+        this.$emit("success");
         $toast.open({ type: "success", message: "登録に成功しました" });
-        this.$router.replace(`/system/users/${data.user_id}`);
       });
     },
-    putUser(user_id: string) {
-      api.put.user({ user_id }, this.form).then(({ data }) => {
+    putFloor(floor_id: string) {
+      api.put.floor({ floor_id }, { ...this.form, parent_id: this.parentId }).then(({ data }) => {
+        this.$emit("success");
         $toast.open({ type: "success", message: "保存に成功しました" });
-        this.form = data;
       });
     },
-    deleteUser(user_id: string) {
-      api.delete.user({ user_id }, this.form).then(() => {
+    deleteFloor(floor_id: string) {
+      api.delete.floor({ floor_id }, this.form).then(() => {
+        this.$emit("success");
         $toast.open({ type: "success", message: "削除に成功しました" });
-        this.$router.replace(`/system/users`);
       });
     },
   },

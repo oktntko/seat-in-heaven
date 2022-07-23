@@ -3,7 +3,7 @@
     tag="ul"
     class="flex flex-col rounded-md border-2 border-dashed pl-4 opacity-90 transition-all"
     :class="`${choosingItem && !isChoosingParentItem ? 'border-sky-500/50' : 'border-transparent'}`"
-    :list="list"
+    :list="root.children"
     :options="{
       animation: 300,
       handle: '.handle',
@@ -25,22 +25,21 @@
     @add="onAdd"
   >
     <li
-      v-for="node in list"
-      :key="node.node_id"
+      v-for="floor in root.children"
+      :key="floor.floor_id"
       class="border border-b-0 p-2 first:rounded-t-md last:rounded-b-md last:border-b"
     >
-      <FloorNodeVue :node="node" @addFloor="addFloor" @addRoom="addRoom" @trash="trash" />
+      <FloorVue :floor="floor" @addChild="addChild" @trash="trash" />
       <FloorTree
-        v-if="node.type === 'floor'"
-        :list="node.children"
+        v-if="floor.floortype === 'Floor'"
+        :children="floor.children"
         :choosing-item="choosingItem"
         :dragging="dragging"
         @choose="onChoose"
         @start="onStart"
         @unchoose="onUnchoose"
         @end="onEnd"
-        @addFloor="addFloor"
-        @addRoom="addRoom"
+        @addChild="addChild"
         @trash="trash"
       >
       </FloorTree>
@@ -51,20 +50,8 @@
 <script lang="ts">
 import Vue, { PropType } from "vue";
 import Draggable from "vuedraggable";
-import FloorNodeVue from "~/pages/system/floors/components/FloorNode.vue";
-
-export type FloorNode = Floor | Room;
-export type Floor = {
-  node_id: number;
-  type: "floor";
-  name: string;
-  children: FloorNode[];
-};
-export type Room = {
-  node_id: number;
-  type: "room";
-  name: string;
-};
+import FloorVue from "~/pages/system/floors/components/Floor.vue";
+import { components } from "~/repositories/schema";
 
 export type EventObject = {
   to: HTMLElement; // list, in which moved element
@@ -90,17 +77,16 @@ export type MoveEventObject = {
 
 export default Vue.extend({
   name: "FloorTree",
-  components: { Draggable, FloorNodeVue },
+  components: { Draggable, FloorVue },
   props: {
     groupName: {
       required: false,
       type: String,
       default: "tree",
     },
-    list: {
-      required: false,
-      type: Array as PropType<FloorNode[]>,
-      default: () => [],
+    root: {
+      required: true,
+      type: Object as PropType<components["schemas"]["ListFloorResponse"]>,
     },
     // eslint-disable-next-line vue/require-prop-types
     choosingItem: {
@@ -159,14 +145,11 @@ export default Vue.extend({
     onRmove(event?: EventObject) {
       console.log("onRmove", event?.item);
     },
-    addFloor(list: FloorNode[]) {
-      this.$emit("addFloor", list);
+    addChild(parent: components["schemas"]["FloorResponse"]) {
+      this.$emit("addChild", parent);
     },
-    addRoom(list: FloorNode[]) {
-      this.$emit("addRoom", list);
-    },
-    trash(node: FloorNode) {
-      this.$emit("trash", node);
+    trash(floor: components["schemas"]["FloorResponse"]) {
+      this.$emit("trash", floor);
     },
   },
 });

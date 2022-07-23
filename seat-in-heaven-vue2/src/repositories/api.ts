@@ -48,6 +48,7 @@ const users = {
     },
   },
 };
+
 const auth = {
   get: {
     auth: async () => {
@@ -74,20 +75,71 @@ const auth = {
   },
 };
 
+const floors = {
+  get: {
+    floors: async (query: paths["/api/floors"]["get"]["parameters"]["query"]) => {
+      return client.get<
+        paths["/api/floors"]["get"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/floors`, {
+        params: query,
+        paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "indices" }),
+      });
+    },
+    floor: async (path: paths["/api/floors/{floor_id}"]["get"]["parameters"]["path"]) => {
+      return client.get<
+        paths["/api/floors/{floor_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/floors/${path.floor_id}`);
+    },
+  },
+  post: {
+    floor: async (
+      body: paths["/api/floors"]["post"]["requestBody"]["content"]["application/json"]
+    ) => {
+      return client.post<
+        paths["/api/floors"]["post"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/floors`, body);
+    },
+  },
+  put: {
+    floor: async (
+      path: paths["/api/floors/{floor_id}"]["put"]["parameters"]["path"],
+      body: paths["/api/floors/{floor_id}"]["put"]["requestBody"]["content"]["application/json"]
+    ) => {
+      return client.put<
+        paths["/api/floors/{floor_id}"]["put"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/floors/${path.floor_id}`, body);
+    },
+  },
+  delete: {
+    floor: async (
+      path: paths["/api/floors/{floor_id}"]["delete"]["parameters"]["path"],
+      query: paths["/api/floors/{floor_id}"]["delete"]["parameters"]["query"]
+    ) => {
+      return client.delete<
+        paths["/api/floors/{floor_id}"]["delete"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/floors/${path.floor_id}`, { params: query });
+    },
+  },
+};
+
 export const api = {
   get: {
     ...auth.get,
+    ...floors.get,
     ...users.get,
   },
   post: {
     ...auth.post,
+    ...floors.post,
     ...users.post,
   },
   put: {
     ...users.put,
+    ...floors.put,
   },
   delete: {
     ...auth.delete,
+    ...floors.delete,
     ...users.delete,
   },
 };

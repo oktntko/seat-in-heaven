@@ -11,7 +11,7 @@ import { CurrentUserType } from "~/types";
 
 export type ParamUser = Omit<
   User,
-  "user_id" | "password" | "created_at" | "created_by" | "created_at" | "updated_at" | "updated_by"
+  "user_id" | "password" | "created_at" | "created_by" | "updated_at" | "updated_by"
 >;
 
 const createUser = async (currentUser: CurrentUserType, user: ParamUser) => {

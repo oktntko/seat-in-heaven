@@ -9,6 +9,15 @@ export type paths = {
     post: operations["AuthController.postAuth"];
     delete: operations["AuthController.deleteAuth"];
   };
+  "/api/floors": {
+    get: operations["FloorsController.getFloors"];
+    post: operations["FloorsController.postFloor"];
+  };
+  "/api/floors/{floor_id}": {
+    get: operations["FloorsController.getFloor"];
+    put: operations["FloorsController.putFloor"];
+    delete: operations["FloorsController.deleteFloor"];
+  };
   "/api/users": {
     get: operations["UsersController.getUsers"];
     post: operations["UsersController.postUser"];
@@ -33,14 +42,44 @@ export type components = {
       email: string;
       password: string;
     };
-    UsersBody: {
+    FloorBody: {
+      /** @enum {string} */
+      floortype: "FLOOR" | "ROOM";
+      floorname: string;
+      parent_id: number;
+    };
+    FloorsPathParams: {
+      floor_id: number;
+    };
+    FloorsQuery: {
+      floor_id?: number;
+    };
+    FloorResponse: {
+      floor_id: number;
+      /** @enum {string} */
+      floortype: "FLOOR" | "ROOM";
+      floorname: string;
+      order: number;
+      updated_at: string;
+    };
+    ListFloorResponse: {
+      ancestors: components["schemas"]["FloorResponse"][];
+      children: components["schemas"]["FloorResponse"][];
+      floor_id: number;
+      /** @enum {string} */
+      floortype: "FLOOR" | "ROOM";
+      floorname: string;
+      order: number;
+      updated_at: string;
+    };
+    UserBody: {
       /** Format: email */
       email: string;
       username: string;
       /** @enum {string} */
       role: "SYSTEM_ADMIN" | "LIMITED_ADMIN" | "USER";
     };
-    UsersPathParams: {
+    UserPathParams: {
       user_id: number;
     };
     UsersQuery: {
@@ -99,6 +138,88 @@ export type operations = {
       };
     };
   };
+  "FloorsController.getFloors": {
+    parameters: {
+      query: {
+        floor_id?: number;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["ListFloorResponse"];
+        };
+      };
+    };
+  };
+  "FloorsController.postFloor": {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+    /** FloorBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorBody"];
+      };
+    };
+  };
+  "FloorsController.getFloor": {
+    parameters: {
+      path: {
+        floor_id: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+  };
+  "FloorsController.putFloor": {
+    parameters: {
+      path: {
+        floor_id: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+    /** FloorBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorBody"] & {
+          updated_at: string;
+        };
+      };
+    };
+  };
+  "FloorsController.deleteFloor": {
+    parameters: {
+      path: {
+        floor_id: string;
+      };
+      query: {
+        updated_at: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+  };
   "UsersController.getUsers": {
     parameters: {
       query: {
@@ -124,10 +245,10 @@ export type operations = {
         };
       };
     };
-    /** UsersBody */
+    /** UserBody */
     requestBody: {
       content: {
-        "application/json": components["schemas"]["UsersBody"];
+        "application/json": components["schemas"]["UserBody"];
       };
     };
   };
@@ -158,10 +279,10 @@ export type operations = {
         };
       };
     };
-    /** UsersBody */
+    /** UserBody */
     requestBody: {
       content: {
-        "application/json": components["schemas"]["UsersBody"] & {
+        "application/json": components["schemas"]["UserBody"] & {
           updated_at: string;
         };
       };

@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, Role } from "@prisma/client";
+import { FloorType, Prisma, PrismaClient, Role } from "@prisma/client";
 
 const ORM = new PrismaClient({});
 
@@ -35,6 +35,29 @@ const main = async () => {
     skipDuplicates: true,
     data: users,
   });
+
+  const rootCount = await ORM.floor.count({ where: { floortype: FloorType.ROOT } });
+
+  if (rootCount === 0) {
+    const root = await ORM.floor.create({
+      data: {
+        floortype: FloorType.ROOT,
+        floorname: "root",
+        order: 0,
+        created_by: 0,
+        updated_by: 0,
+      },
+    });
+
+    await ORM.floornode.create({
+      data: {
+        ancestor_id: root.floor_id,
+        descendant_id: root.floor_id,
+        distance: 0,
+      },
+    });
+  }
+
   console.log(`Seeding finished.`);
 };
 

@@ -4,38 +4,31 @@
     <nav class="mb-8 flex" aria-label="Breadcrumb">
       <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
-          <p class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-400">
+          <RouterLink
+            :to="{ path: `/system/floors` }"
+            class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-400"
+          >
             <Icon class="mr-2 h-4 w-4" icon="fa-solid:layer-group" />
-            フロア管理
-          </p>
-        </li>
-        <li>
-          <RouterLink to="/system/floors/東京本社" class="flex items-center">
-            <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
             <p
               class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
             >
-              東京本社
+              フロア管理
             </p>
           </RouterLink>
         </li>
-        <li>
-          <RouterLink to="/system/floors/東京本社/15F" class="flex items-center">
+        <li v-for="ancestor in root.ancestors" :key="ancestor.floor_id">
+          <RouterLink
+            :to="{
+              path: `/system/floors`,
+              query: { floor_id: ancestor.floor_id },
+            }"
+            class="flex items-center"
+          >
             <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
             <p
               class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
             >
-              15F
-            </p>
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/system/floors/東京本社/西側エリア" class="flex items-center">
-            <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
-            <p
-              class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
-            >
-              西側エリア
+              {{ ancestor.floorname }}
             </p>
           </RouterLink>
         </li>
@@ -67,104 +60,65 @@
         <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
           <button
             class="flex flex-row flex-nowrap items-center gap-1 text-sm"
-            @click="addFloor(list)"
+            @click="addChild(root)"
           >
             <Icon class="h-4 w-4 text-yellow-600" icon="bxs:folder-plus" />
             <span>フロアを追加する</span>
           </button>
-          <button
-            class="flex flex-row flex-nowrap items-center gap-1 text-sm"
-            @click="addRoom(list)"
-          >
-            <Icon class="h-4 w-4 text-blue-600" icon="ant-design:file-add-outlined" />
-            <span>ルームを追加する</span>
-          </button>
         </div>
       </div>
+
       <FloorTree
-        :list="list"
+        v-if="root"
+        :root="root"
         :choosing-item="choosingItem"
         :dragging="dragging"
         @choose="onChoose"
         @start="dragging = true"
         @unchoose="onUnchoose"
         @end="dragging = false"
-        @addFloor="addFloor"
-        @addRoom="addRoom"
+        @addChild="addChild"
         @trash="trash"
       >
       </FloorTree>
+      <div v-else>ローディング</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import type { EventObject, FloorNode } from "./components/FloorTree.vue";
+import { $loading } from "~/components/Loading.vue";
+import { $modal } from "~/components/Modal.vue";
+import { api } from "~/repositories/api";
+import { components } from "~/repositories/schema";
+import FloorFormVue from "./components/FloorForm.vue";
+import type { EventObject } from "./components/FloorTree.vue";
 import FloorTree from "./components/FloorTree.vue";
 
 export default Vue.extend({
   components: {
     FloorTree,
   },
+  beforeRouteUpdate(to, from, next) {
+    this.floor_id = to.query.floor_id as string | undefined;
+    next();
+  },
   data() {
     return {
+      floor_id: undefined as string | undefined,
       choosingItem: undefined as HTMLElement | undefined,
       dragging: false,
-      list: [
-        {
-          parent_id: 1,
-          node_id: 1,
-          name: "floor 1",
-          type: "floor",
-          children: [
-            {
-              node_id: 9,
-              name: "room 8",
-              type: "room",
-            },
-            {
-              node_id: 2,
-              name: "floor 2",
-              type: "floor",
-              children: [],
-            },
-          ],
-        },
-        {
-          node_id: 3,
-          name: "floor 3",
-          type: "floor",
-          children: [
-            {
-              node_id: 4,
-              name: "room 4",
-              type: "room",
-            },
-          ],
-        },
-        {
-          node_id: 5,
-          name: "floor 5",
-          type: "floor",
-          children: [
-            {
-              node_id: 6,
-              name: "room 6",
-              type: "room",
-            },
-            {
-              node_id: 7,
-              name: "room 7",
-              type: "room",
-            },
-          ],
-        },
-      ] as FloorNode[],
+      root: null as components["schemas"]["ListFloorResponse"] | null,
       form: {
         keyword: "",
       },
     };
+  },
+  watch: {
+    floor_id() {
+      this.getFloors();
+    },
   },
   created() {
     this.getFloors();
@@ -180,27 +134,26 @@ export default Vue.extend({
     },
 
     getFloors() {
-      console.log("getFloors");
+      const loading = $loading.open();
+      api.get
+        .floors({ floor_id: this.floor_id ? Number(this.floor_id) : undefined })
+        .then(({ data }) => {
+          this.root = data;
+        })
+        .finally(loading.close);
     },
-    addFloor(list: FloorNode[]) {
-      const node_id = Math.floor(Math.random() * 10000000000000);
-      list.push({
-        node_id,
-        type: "floor",
-        name: `floor${node_id}`,
-        children: [],
-      });
+    addChild(parent: components["schemas"]["FloorResponse"]) {
+      $modal
+        .open({
+          component: FloorFormVue,
+          componentProps: {
+            parentId: parent.floor_id,
+          },
+        })
+        .then(this.getFloors);
     },
-    addRoom(list: FloorNode[]) {
-      const node_id = Math.floor(Math.random() * 10000000000000);
-      list.push({
-        node_id,
-        type: "room",
-        name: `room${node_id}`,
-      });
-    },
-    trash(node: FloorNode) {
-      this.$emit("trash", node);
+    trash(floor: components["schemas"]["FloorResponse"]) {
+      this.$emit("trash", floor);
     },
   },
 });

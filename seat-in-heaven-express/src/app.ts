@@ -39,6 +39,7 @@ useExpressServer(app, {
   defaultErrorHandler: false,
   controllers: [
     controllers.AuthController,
+    controllers.FloorsController,
     controllers.UsersController,
     controllers.OpenapiController,
   ],
