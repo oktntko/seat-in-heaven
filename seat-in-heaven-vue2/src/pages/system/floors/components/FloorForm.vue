@@ -54,7 +54,7 @@
       </div>
       <div class="flex justify-end gap-4">
         <button
-          v-if="userId"
+          v-if="floorId"
           type="button"
           class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-yellow-400 py-2.5 px-5 text-sm font-medium text-gray-800 transition-all hover:bg-yellow-500 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
           @click="handleDelete"
@@ -67,7 +67,7 @@
           class="inline-flex min-w-[120px] items-center justify-center rounded-lg bg-green-600 py-2.5 px-5 text-sm font-medium text-white transition-all hover:bg-green-700 focus:z-10 focus:outline-none dark:bg-blue-600 dark:hover:bg-blue-700"
         >
           <Icon class="mr-2 h-4 w-4" icon="akar-icons:check-box" />
-          {{ userId ? "保存" : "登録" }}
+          {{ floorId ? "保存" : "登録" }}
         </button>
       </div>
     </form>
@@ -138,19 +138,19 @@ export default Vue.extend({
     },
     postFloor() {
       api.post.floor({ ...this.form, parent_id: this.parentId }).then(({ data }) => {
-        this.$emit("success");
+        this.$emit("success", data);
         $toast.open({ type: "success", message: "登録に成功しました" });
       });
     },
     putFloor(floor_id: string) {
       api.put.floor({ floor_id }, { ...this.form, parent_id: this.parentId }).then(({ data }) => {
-        this.$emit("success");
+        this.$emit("success", data);
         $toast.open({ type: "success", message: "保存に成功しました" });
       });
     },
     deleteFloor(floor_id: string) {
-      api.delete.floor({ floor_id }, this.form).then(() => {
-        this.$emit("success");
+      api.delete.floor({ floor_id }, this.form).then((data) => {
+        this.$emit("success", data);
         $toast.open({ type: "success", message: "削除に成功しました" });
       });
     },

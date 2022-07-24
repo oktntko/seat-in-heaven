@@ -29,10 +29,10 @@
       :key="floor.floor_id"
       class="border border-b-0 p-2 first:rounded-t-md last:rounded-b-md last:border-b"
     >
-      <FloorVue :floor="floor" @addChild="addChild" @trash="trash" />
+      <FloorVue :floor="floor" @addChild="addChild" @trash="trash" @pullChildren="pullChildren" />
       <FloorTree
-        v-if="floor.floortype === 'Floor'"
-        :children="floor.children"
+        v-if="floor.floortype === 'FLOOR'"
+        :root="floor"
         :choosing-item="choosingItem"
         :dragging="dragging"
         @choose="onChoose"
@@ -41,6 +41,7 @@
         @end="onEnd"
         @addChild="addChild"
         @trash="trash"
+        @pullChildren="pullChildren"
       >
       </FloorTree>
     </li>
@@ -150,6 +151,9 @@ export default Vue.extend({
     },
     trash(floor: components["schemas"]["FloorResponse"]) {
       this.$emit("trash", floor);
+    },
+    pullChildren(open: boolean, parent: components["schemas"]["FloorResponse"]) {
+      this.$emit("pullChildren", open, parent);
     },
   },
 });

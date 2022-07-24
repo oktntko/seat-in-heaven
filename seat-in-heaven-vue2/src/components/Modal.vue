@@ -129,9 +129,9 @@ const Modal = Vue.extend({
       this.open = false;
       setTimeout(() => this.$emit("close"), this.dissmissDuration);
     },
-    success() {
+    success(data: any) {
       this.open = false;
-      setTimeout(() => this.$emit("success"), this.dissmissDuration);
+      setTimeout(() => this.$emit("success", data), this.dissmissDuration);
     },
   },
 });
@@ -139,15 +139,15 @@ const Modal = Vue.extend({
 export default Modal;
 
 export const $modal = {
-  open(propsData: ModalProps) {
+  open<T>(propsData: ModalProps) {
     const instance = new Modal({ propsData }).$mount();
     const parent = document.createElement("div");
 
     parent.appendChild(instance.$el);
     document.body.appendChild(parent);
 
-    return new Promise<{ ok: true }>((resolve, reject) => {
-      instance.$on("success", () => resolve({ ok: true }));
+    return new Promise<T>((resolve, reject) => {
+      instance.$on("success", resolve);
       instance.$on("close", () => reject({ ok: false }));
     }).finally(() => {
       instance.$destroy();

@@ -16,22 +16,24 @@
             </p>
           </RouterLink>
         </li>
-        <li v-for="ancestor in root.ancestors" :key="ancestor.floor_id">
-          <RouterLink
-            :to="{
-              path: `/system/floors`,
-              query: { floor_id: ancestor.floor_id },
-            }"
-            class="flex items-center"
-          >
-            <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
-            <p
-              class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
+        <template v-if="root">
+          <li v-for="ancestor in root.ancestors" :key="ancestor.floor_id">
+            <RouterLink
+              :to="{
+                path: `/system/floors`,
+                query: { floor_id: ancestor.floor_id },
+              }"
+              class="flex items-center"
             >
-              {{ ancestor.floorname }}
-            </p>
-          </RouterLink>
-        </li>
+              <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
+              <p
+                class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
+              >
+                {{ ancestor.floorname }}
+              </p>
+            </RouterLink>
+          </li>
+        </template>
       </ol>
     </nav>
 
@@ -73,12 +75,14 @@
         :root="root"
         :choosing-item="choosingItem"
         :dragging="dragging"
+        :open="true"
         @choose="onChoose"
         @start="dragging = true"
         @unchoose="onUnchoose"
         @end="dragging = false"
         @addChild="addChild"
         @trash="trash"
+        @pullChildren="pullChildren"
       >
       </FloorTree>
       <div v-else>ローディング</div>
@@ -144,13 +148,28 @@ export default Vue.extend({
     },
     addChild(parent: components["schemas"]["FloorResponse"]) {
       $modal
-        .open({
+        .open<components["schemas"]["FloorResponse"]>({
           component: FloorFormVue,
           componentProps: {
             parentId: parent.floor_id,
           },
         })
-        .then(this.getFloors);
+        .then((child) => {
+          parent.children.push(child);
+        });
+    },
+    pullChildren(open: boolean, parent: components["schemas"]["FloorResponse"]) {
+      if (open) {
+        const loading = $loading.open();
+        api.get
+          .floors({ floor_id: parent.floor_id })
+          .then(({ data }) => {
+            this.$set(parent, "children", data.children);
+          })
+          .finally(loading.close);
+      } else {
+        this.$set(parent, "children", []);
+      }
     },
     trash(floor: components["schemas"]["FloorResponse"]) {
       this.$emit("trash", floor);

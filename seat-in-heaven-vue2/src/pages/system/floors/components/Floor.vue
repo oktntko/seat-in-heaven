@@ -6,11 +6,17 @@
     <!-- ハンドル -->
     <Icon class="handle h-5 w-5 cursor-move" icon="clarity:drag-handle-line" />
     <!-- フロア or ルーム -->
-    <Icon
-      class="h-5 w-5"
-      :class="isFloor ? 'text-yellow-600' : 'text-blue-600'"
-      :icon="isFloor ? 'bxs:folder' : 'ant-design:file-outlined'"
-    />
+    <template v-if="isFloor">
+      <button type="button" @click="handleChange">
+        <Icon
+          class="h-5 w-5 cursor-pointer text-yellow-600"
+          :icon="open ? 'bxs:folder-open' : `bxs:folder`"
+        />
+      </button>
+    </template>
+    <template v-else>
+      <Icon class="h-5 w-5 text-blue-600" icon="ant-design:file-outlined" />
+    </template>
     <!-- フロア名 -->
     <RouterLink
       v-if="isFloor"
@@ -51,6 +57,11 @@ export default Vue.extend({
       type: Object as PropType<components["schemas"]["FloorResponse"]>,
     },
   },
+  data() {
+    return {
+      open: false,
+    };
+  },
   computed: {
     isFloor(): boolean {
       return this.floor.floortype === "FLOOR";
@@ -62,6 +73,10 @@ export default Vue.extend({
     },
     trash(floor: components["schemas"]["FloorResponse"]) {
       this.$emit("trash", floor);
+    },
+    handleChange() {
+      this.open = !this.open;
+      this.$emit("pullChildren", this.open, this.floor);
     },
   },
 });
