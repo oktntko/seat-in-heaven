@@ -113,7 +113,7 @@ const putFloor = async (
 };
 
 // # GET /api/floors/:floor_id
-const getFloor = async (currentUser: CurrentUserType, floor_id: number) => {
+const getFloor = async (currentUser: CurrentUserType, floor_id?: number) => {
   log.debug("getFloor", floor_id);
 
   const floor = await FloorsRepository.findUniqueFloor({ floor_id });

@@ -4,15 +4,13 @@
     class="flex flex-col rounded-md border-2 border-dashed pl-4 opacity-90 transition-all"
     :class="`${choosingItem && !isChoosingParentItem ? 'border-sky-500/50' : 'border-transparent'}`"
     :list="root.children"
-    :options="{
-      animation: 300,
-      handle: '.handle',
-      group: groupName,
-      chosenClass: 'opacity-10', // Class name for the chosen item
-      ghostClass: 'border-sky-500', // Class name for the drop placeholder
-      dragClass: '', // Class name for the dragging item
-      dragoverBubble: false,
-    }"
+    group="tree"
+    handle=".handle"
+    chosen-class="opacity-10"
+    ghost-class="border-sky-500"
+    drag-class=""
+    :animation="300"
+    :dragover-bubble="false"
     :move="checkMove"
     @change="onChange"
     @choose="onChoose"
@@ -80,11 +78,6 @@ export default Vue.extend({
   name: "FloorTree",
   components: { Draggable, FloorVue },
   props: {
-    groupName: {
-      required: false,
-      type: String,
-      default: "tree",
-    },
     root: {
       required: true,
       type: Object as PropType<components["schemas"]["ListFloorResponse"]>,
