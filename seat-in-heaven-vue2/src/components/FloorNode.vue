@@ -6,7 +6,7 @@
       :class="isOpen ? 'pb-2' : ''"
     >
       <!-- ハンドル -->
-      <Icon class="handle h-5 w-5 cursor-move" icon="clarity:drag-handle-line" />
+      <Icon class="handle h-5 w-5 cursor-move" icon="ic:baseline-drag-indicator" />
       <!-- フロア or ルーム -->
       <template v-if="isFloor">
         <button type="button" @click="handleChangeOpen">
@@ -35,15 +35,11 @@
       </p>
       <!-- 追加 -->
       <button
-        v-if="isFloor"
+        v-if="isFloor && isOpen"
         class="flex flex-row flex-nowrap items-center gap-1"
-        @click="addChild(floor)"
+        @click="onAddChild(floor)"
       >
         <Icon class="h-5 w-5" icon="bx:folder-plus" />
-      </button>
-      <!-- 削除 -->
-      <button class="flex flex-row flex-nowrap items-center gap-1" @click="trash(floor)">
-        <Icon class="h-5 w-5 cursor-pointer" icon="bx:trash" />
       </button>
     </div>
     <template v-if="isFloor">

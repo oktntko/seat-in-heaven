@@ -14,8 +14,10 @@
                     <input
                       v-model="form.email"
                       placeholder="example@example.com"
-                      type="text"
+                      type="email"
                       class="text-md block w-full rounded-lg border-2 border-gray-300 bg-white px-3 py-2 placeholder-gray-600 shadow-md focus:border-gray-600 focus:bg-white focus:placeholder-gray-500 focus:outline-none"
+                      required
+                      maxlength="255"
                     />
                   </div>
                   <div class="py-2">
@@ -25,6 +27,8 @@
                         v-model="form.password"
                         :type="show ? 'text' : 'password'"
                         class="text-md block w-full rounded-lg border-2 border-gray-300 bg-white px-3 py-2 placeholder-gray-600 shadow-md focus:border-gray-600 focus:bg-white focus:placeholder-gray-500 focus:outline-none"
+                        required
+                        maxlength="255"
                       />
                       <div
                         class="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 text-sm leading-5"

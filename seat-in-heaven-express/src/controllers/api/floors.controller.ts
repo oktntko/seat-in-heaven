@@ -68,7 +68,7 @@ export class FloorsNodeBody {
   @IsPositive()
   parent_id: number;
   @IsPositive()
-  child_id: number;
+  floor_id: number;
 }
 
 // ::: RESPONSE

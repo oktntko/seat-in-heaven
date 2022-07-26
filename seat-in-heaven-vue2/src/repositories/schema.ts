@@ -18,6 +18,12 @@ export type paths = {
     put: operations["FloorsController.putFloor"];
     delete: operations["FloorsController.deleteFloor"];
   };
+  "/api/floors/order": {
+    patch: operations["FloorsController.patchFloorsOrder"];
+  };
+  "/api/floors/node": {
+    patch: operations["FloorsController.patchFloorsNode"];
+  };
   "/api/users": {
     get: operations["UsersController.getUsers"];
     post: operations["UsersController.postUser"];
@@ -29,12 +35,6 @@ export type paths = {
   };
   "/openapi": {
     get: operations["OpenapiController.getOpenApi"];
-  };
-  "/api/floors/order": {
-    patch: operations["FloorsController.patchFloorsOrder"];
-  };
-  "/api/floors/node": {
-    patch: operations["FloorsController.patchFloorsNode"];
   };
 };
 
@@ -59,6 +59,13 @@ export type components = {
     };
     FloorsQuery: {
       floor_id?: number;
+    };
+    FloorsOrderBody: {
+      floor_id_list: number[];
+    };
+    FloorsNodeBody: {
+      parent_id: number;
+      floor_id: number;
     };
     FloorResponse: {
       floor_id: number;
@@ -115,13 +122,6 @@ export type components = {
     ListUserResponse: {
       total: number;
       users: components["schemas"]["UserResponse"][];
-    };
-    FloorsOrderBody: {
-      floor_id_list: number[];
-    };
-    FloorsNodeBody: {
-      parent_id: number;
-      child_id: number;
     };
   };
 };
@@ -242,6 +242,36 @@ export type operations = {
       };
     };
   };
+  "FloorsController.patchFloorsOrder": {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["OkResponse"];
+        };
+      };
+    };
+    /** FloorsOrderBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorsOrderBody"];
+      };
+    };
+  };
+  "FloorsController.patchFloorsNode": {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["OkResponse"];
+        };
+      };
+    };
+    /** FloorsNodeBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorsNodeBody"];
+      };
+    };
+  };
   "UsersController.getUsers": {
     parameters: {
       query: {
@@ -334,36 +364,6 @@ export type operations = {
         content: {
           "application/json": unknown;
         };
-      };
-    };
-  };
-  "FloorsController.patchFloorsOrder": {
-    responses: {
-      200: {
-        content: {
-          "application/json": components["schemas"]["OkResponse"];
-        };
-      };
-    };
-    /** FloorsOrderBody */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["FloorsOrderBody"];
-      };
-    };
-  };
-  "FloorsController.patchFloorsNode": {
-    responses: {
-      200: {
-        content: {
-          "application/json": components["schemas"]["OkResponse"];
-        };
-      };
-    };
-    /** FloorsNodeBody */
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["FloorsNodeBody"];
       };
     };
   };

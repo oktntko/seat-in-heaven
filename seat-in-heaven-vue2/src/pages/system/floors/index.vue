@@ -51,6 +51,7 @@
             type="text"
             class="block w-full rounded-lg border border-gray-300 p-2.5 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
             placeholder="キーワード"
+            maxlength="100"
           />
         </div>
       </div>
@@ -142,11 +143,11 @@ export default Vue.extend({
       // parent > child となるようにノードを付け替える
       if (event.added) {
         // parent.children は移動後の状態になっている
-        console.log(parent, event.added);
         const child = event.added.element; // 移動してきた子
         // parent > child となるようにノードを付け替える
         this.patchFloorsNode(parent.floor_id, child.floor_id);
       }
+
       // 追加=>削除の順番にイベントが呼ばれるが、処理は追加の方でやるのでremovedイベントは捨てる
 
       // 順番の移動(追加でもどこに追加されるかわからないのですべて更新する)
@@ -162,8 +163,8 @@ export default Vue.extend({
         this.patchFloorsOrder(floor_id_list);
       }
     },
-    patchFloorsNode(parent_id: number, child_id: number) {
-      return api.patch.floors.node({ parent_id, child_id });
+    patchFloorsNode(parent_id: number, floor_id: number) {
+      return api.patch.floors.node({ parent_id, floor_id });
     },
     patchFloorsOrder(floor_id_list: number[]) {
       return api.patch.floors.order({ floor_id_list });
