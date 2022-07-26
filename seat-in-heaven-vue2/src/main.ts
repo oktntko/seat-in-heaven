@@ -1,5 +1,6 @@
 import Vue from "vue";
 import App from "~/App.vue";
+import "~/components/circular-components";
 import "~/libs/iconify";
 import "~/libs/vxe-table";
 import "~/main.css";

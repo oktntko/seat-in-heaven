@@ -1,4 +1,4 @@
-import { Floor, Prisma } from "@prisma/client";
+import { Floor, FloorType, Prisma } from "@prisma/client";
 import ORM from "~/arch/ORM";
 import dayjs from "~/libs/dayjs";
 import { NotExistsError, UpdateConflictsError } from "~/middlewares/ErrorHandler";
@@ -125,6 +125,23 @@ const findUniqueFloor = async ({ floor_id }: RequireOne<Prisma.FloorWhereUniqueI
   });
 };
 
+const findRootFloor = async () => {
+  log.info("findRootFloor");
+
+  return ORM.floor.findFirst({
+    select: {
+      floor_id: true,
+      floorname: true,
+      floortype: true,
+      order: true,
+      updated_at: true,
+    },
+    where: {
+      floortype: FloorType.ROOT,
+    },
+  });
+};
+
 const findManyFloors = async (where: Prisma.FloorWhereInput) => {
   log.info("findManyFloors");
 
@@ -176,10 +193,10 @@ const checkPreviousVersion = async (
   return previous;
 };
 
-const findFirstFloorWithChildren = async (where: Prisma.FloorWhereInput) => {
-  log.info("findFirstFloorWithChildren", where);
+const findUniqueFloorWithChildren = async (where: RequireOne<Prisma.FloorWhereUniqueInput>) => {
+  log.info("findUniqueFloorWithChildren", where);
 
-  return ORM.floor.findFirst({
+  return ORM.floor.findUniqueOrThrow({
     select: {
       floor_id: true,
       floorname: true,
@@ -188,6 +205,8 @@ const findFirstFloorWithChildren = async (where: Prisma.FloorWhereInput) => {
       updated_at: true,
       descendants: {
         select: {
+          distance: true,
+          descendant_id: true,
           descendant: {
             select: {
               floor_id: true,
@@ -238,14 +257,60 @@ const findAncestors = async (floor_id: number) => {
   });
 };
 
+const findDescendants = async (floor_id: number) => {
+  log.info("findDescendants", floor_id);
+
+  return ORM.floornode.findMany({
+    select: {
+      distance: true,
+      descendant_id: true,
+      descendant: {
+        select: {
+          floor_id: true,
+          floorname: true,
+          floortype: true,
+          order: true,
+          updated_at: true,
+        },
+      },
+    },
+    where: {
+      ancestor_id: floor_id,
+    },
+    orderBy: {
+      distance: "asc",
+    },
+  });
+};
+
+const deleteMany = async (where: Prisma.FloornodeWhereInput) => {
+  log.info("deleteMany", where);
+
+  return ORM.floornode.deleteMany({
+    where,
+  });
+};
+
+const createMany = async (data: Prisma.FloornodeCreateManyInput[]) => {
+  log.info("createMany", data);
+
+  return ORM.floornode.createMany({
+    data,
+  });
+};
+
 export const FloorsRepository = {
   createFloor,
   updateFloor,
   patchFloor,
   deleteFloor,
   findUniqueFloor,
+  findRootFloor,
   findManyFloors,
   checkPreviousVersion,
   findAncestors,
-  findFirstFloorWithChildren,
+  findDescendants,
+  deleteMany,
+  createMany,
+  findUniqueFloorWithChildren,
 };

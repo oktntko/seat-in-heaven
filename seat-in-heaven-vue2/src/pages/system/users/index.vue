@@ -108,8 +108,8 @@
         </vxe-column>
         <vxe-column field="username" title="ユーザ名"></vxe-column>
         <vxe-column field="role" title="ロール"></vxe-column>
-        <template #empty
-          ><div
+        <template #empty>
+          <div
             class="border-t border-b border-yellow-500 bg-yellow-100 px-4 py-3 text-yellow-700"
             role="alert"
           >

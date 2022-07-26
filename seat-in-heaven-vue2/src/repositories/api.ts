@@ -120,6 +120,24 @@ const floors = {
       >(`/api/floors/${path.floor_id}`, { params: query });
     },
   },
+  patch: {
+    floors: {
+      order: async (
+        body: paths["/api/floors/order"]["patch"]["requestBody"]["content"]["application/json"]
+      ) => {
+        return client.patch<
+          paths["/api/floors/order"]["patch"]["responses"]["200"]["content"]["application/json"]
+        >(`/api/floors/order`, body);
+      },
+      node: async (
+        body: paths["/api/floors/node"]["patch"]["requestBody"]["content"]["application/json"]
+      ) => {
+        return client.patch<
+          paths["/api/floors/node"]["patch"]["responses"]["200"]["content"]["application/json"]
+        >(`/api/floors/node`, body);
+      },
+    },
+  },
 };
 
 export const api = {
@@ -141,5 +159,8 @@ export const api = {
     ...auth.delete,
     ...floors.delete,
     ...users.delete,
+  },
+  patch: {
+    ...floors.patch,
   },
 };

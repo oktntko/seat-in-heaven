@@ -30,6 +30,12 @@ export type paths = {
   "/openapi": {
     get: operations["OpenapiController.getOpenApi"];
   };
+  "/api/floors/order": {
+    patch: operations["FloorsController.patchFloorsOrder"];
+  };
+  "/api/floors/node": {
+    patch: operations["FloorsController.patchFloorsNode"];
+  };
 };
 
 export type components = {
@@ -62,9 +68,18 @@ export type components = {
       order: number;
       updated_at: string;
     };
-    ListFloorResponse: {
-      ancestors: components["schemas"]["FloorResponse"][];
+    FloorResponseWithChildren: {
       children: components["schemas"]["FloorResponse"][];
+      floor_id: number;
+      /** @enum {string} */
+      floortype: "FLOOR" | "ROOM";
+      floorname: string;
+      order: number;
+      updated_at: string;
+    };
+    RootFloorResponse: {
+      ancestors: components["schemas"]["FloorResponse"][];
+      children: components["schemas"]["FloorResponseWithChildren"][];
       floor_id: number;
       /** @enum {string} */
       floortype: "FLOOR" | "ROOM";
@@ -100,6 +115,13 @@ export type components = {
     ListUserResponse: {
       total: number;
       users: components["schemas"]["UserResponse"][];
+    };
+    FloorsOrderBody: {
+      floor_id_list: number[];
+    };
+    FloorsNodeBody: {
+      parent_id: number;
+      child_id: number;
     };
   };
 };
@@ -147,7 +169,7 @@ export type operations = {
     responses: {
       200: {
         content: {
-          "application/json": components["schemas"]["ListFloorResponse"];
+          "application/json": components["schemas"]["RootFloorResponse"];
         };
       };
     };
@@ -312,6 +334,36 @@ export type operations = {
         content: {
           "application/json": unknown;
         };
+      };
+    };
+  };
+  "FloorsController.patchFloorsOrder": {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["OkResponse"];
+        };
+      };
+    };
+    /** FloorsOrderBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorsOrderBody"];
+      };
+    };
+  };
+  "FloorsController.patchFloorsNode": {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["OkResponse"];
+        };
+      };
+    };
+    /** FloorsNodeBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorsNodeBody"];
       };
     };
   };

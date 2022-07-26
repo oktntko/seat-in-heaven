@@ -3,7 +3,7 @@
     tag="ul"
     class="flex flex-col rounded-md border-2 border-dashed pl-4 opacity-90 transition-all"
     :class="`${choosingItem && !isChoosingParentItem ? 'border-sky-500/50' : 'border-transparent'}`"
-    :list="root.children"
+    :list="floor.children"
     group="tree"
     handle=".handle"
     chosen-class="opacity-10"
@@ -11,45 +11,29 @@
     drag-class=""
     :animation="300"
     :dragover-bubble="false"
-    :move="checkMove"
-    @change="onChange"
     @choose="onChoose"
-    @start="onStart"
     @unchoose="onUnchoose"
-    @update="onUpdate"
-    @sort="onSort"
-    @end="onEnd"
-    @remove="onRmove"
-    @add="onAdd"
+    @change="handleChange"
   >
-    <li
-      v-for="floor in root.children"
-      :key="floor.floor_id"
+    <FloorNode
+      v-for="child in floor.children"
+      :key="child.floor_id"
       class="border border-b-0 p-2 first:rounded-t-md last:rounded-b-md last:border-b"
+      :floor="child"
+      :choosing-item="choosingItem"
+      @choose="onChoose"
+      @unchoose="onUnchoose"
+      @change="onChange"
+      @addChild="onAddChild"
+      @open="onOpen"
     >
-      <FloorVue :floor="floor" @addChild="addChild" @trash="trash" @pullChildren="pullChildren" />
-      <FloorTree
-        v-if="floor.floortype === 'FLOOR'"
-        :root="floor"
-        :choosing-item="choosingItem"
-        :dragging="dragging"
-        @choose="onChoose"
-        @start="onStart"
-        @unchoose="onUnchoose"
-        @end="onEnd"
-        @addChild="addChild"
-        @trash="trash"
-        @pullChildren="pullChildren"
-      >
-      </FloorTree>
-    </li>
+    </FloorNode>
   </Draggable>
 </template>
 
 <script lang="ts">
 import Vue, { PropType } from "vue";
 import Draggable from "vuedraggable";
-import FloorVue from "~/pages/system/floors/components/Floor.vue";
 import { components } from "~/repositories/schema";
 
 export type EventObject = {
@@ -74,23 +58,40 @@ export type MoveEventObject = {
   willInsertAfter: boolean; // true if will element be inserted after target (or false if before)
 };
 
+export type AddedEventObject = {
+  newIndex: number;
+  element: components["schemas"]["FloorResponseWithChildren"];
+};
+
+export type RemovedEventObject = {
+  oldIndex: number;
+  element: components["schemas"]["FloorResponseWithChildren"];
+};
+
+export type MovedEventObject = {
+  newIndex: number;
+  oldIndex: number;
+  element: components["schemas"]["FloorResponseWithChildren"];
+};
+
+export type ChangeEventObject = {
+  added?: AddedEventObject;
+  removed?: RemovedEventObject;
+  moved?: MovedEventObject;
+};
+
 export default Vue.extend({
   name: "FloorTree",
-  components: { Draggable, FloorVue },
+  components: { Draggable },
   props: {
-    root: {
+    floor: {
       required: true,
-      type: Object as PropType<components["schemas"]["ListFloorResponse"]>,
+      type: Object as PropType<components["schemas"]["FloorResponseWithChildren"]>,
     },
     // eslint-disable-next-line vue/require-prop-types
     choosingItem: {
       required: false,
       default: undefined,
-    },
-    dragging: {
-      required: false,
-      type: Boolean,
-      default: false,
     },
   },
   data() {
@@ -104,49 +105,24 @@ export default Vue.extend({
     },
   },
   methods: {
+    handleChange(event: ChangeEventObject) {
+      this.onChange(this.floor, event);
+    },
+
     onChoose(event?: EventObject) {
       this.$emit("choose", event);
-      console.log("onChoose", event?.item);
-    },
-    onStart(event?: EventObject) {
-      this.$emit("start", event);
-      console.log("onStart", event?.item);
-    },
-    checkMove: function (evt: MoveEventObject) {
-      console.log("checkMove", evt);
-      return true;
-    },
-    onChange(dropResult: { removedIndex: number; addedIndex: number; payload: object }) {
-      console.log("onChange", dropResult);
     },
     onUnchoose(event?: EventObject) {
       this.$emit("unchoose", event);
-      console.log("onUnchoose", event?.item);
     },
-    onUpdate(event?: EventObject) {
-      console.log("onUpdate", event?.item);
+    onChange(parent: components["schemas"]["FloorResponseWithChildren"], event: ChangeEventObject) {
+      this.$emit("change", parent, event);
     },
-    onSort(event?: EventObject) {
-      console.log("onSort", event?.item);
-    },
-    onEnd(event?: EventObject) {
-      this.$emit("end", event);
-      console.log("onEnd", event?.item);
-    },
-    onAdd(event?: EventObject) {
-      console.log("onAdd", event?.item);
-    },
-    onRmove(event?: EventObject) {
-      console.log("onRmove", event?.item);
-    },
-    addChild(parent: components["schemas"]["FloorResponse"]) {
+    onAddChild(parent: components["schemas"]["FloorResponseWithChildren"]) {
       this.$emit("addChild", parent);
     },
-    trash(floor: components["schemas"]["FloorResponse"]) {
-      this.$emit("trash", floor);
-    },
-    pullChildren(open: boolean, parent: components["schemas"]["FloorResponse"]) {
-      this.$emit("pullChildren", open, parent);
+    onOpen(parent: components["schemas"]["FloorResponseWithChildren"], isOpen: boolean) {
+      this.$emit("open", parent, isOpen);
     },
   },
 });

@@ -38,7 +38,7 @@
     </nav>
 
     <!-- フィルタ -->
-    <form class="mb-8 flex flex-wrap gap-8 px-8" @submit.prevent="getFloors">
+    <form class="mb-8 flex flex-wrap gap-8 px-8" @submit.prevent="getRoot">
       <div class="flex w-96 items-center">
         <label for="keyword" class="sr-only">Search</label>
         <div class="relative w-full">
@@ -62,7 +62,7 @@
         <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
           <button
             class="flex flex-row flex-nowrap items-center gap-1 text-sm"
-            @click="addChild(root)"
+            @click="handleAddChild(root)"
           >
             <Icon class="h-4 w-4 text-yellow-600" icon="bxs:folder-plus" />
             <span>フロアを追加する</span>
@@ -70,21 +70,18 @@
         </div>
       </div>
 
-      <FloorTree
+      <FloorNode
         v-if="root"
-        :root="root"
+        :floor="root"
         :choosing-item="choosingItem"
-        :dragging="dragging"
-        :open="true"
-        @choose="onChoose"
-        @start="dragging = true"
-        @unchoose="onUnchoose"
-        @end="dragging = false"
-        @addChild="addChild"
-        @trash="trash"
-        @pullChildren="pullChildren"
+        tree-role="ROOT"
+        @choose="handleChoose"
+        @unchoose="handleUnchoose"
+        @change="handleChange"
+        @addChild="handleAddChild"
+        @open="handleOpen"
       >
-      </FloorTree>
+      </FloorNode>
       <div v-else>ローディング</div>
     </div>
   </div>
@@ -92,18 +89,14 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { ChangeEventObject, EventObject } from "~/components/FloorChildren.vue";
 import { $loading } from "~/components/Loading.vue";
 import { $modal } from "~/components/Modal.vue";
 import { api } from "~/repositories/api";
 import { components } from "~/repositories/schema";
 import FloorFormVue from "./components/FloorForm.vue";
-import type { EventObject } from "./components/FloorTree.vue";
-import FloorTree from "./components/FloorTree.vue";
 
 export default Vue.extend({
-  components: {
-    FloorTree,
-  },
   beforeRouteUpdate(to, from, next) {
     this.floor_id = to.query.floor_id as string | undefined;
     next();
@@ -112,8 +105,7 @@ export default Vue.extend({
     return {
       floor_id: undefined as string | undefined,
       choosingItem: undefined as HTMLElement | undefined,
-      dragging: false,
-      root: null as components["schemas"]["ListFloorResponse"] | null,
+      root: undefined as components["schemas"]["RootFloorResponse"] | undefined,
       form: {
         keyword: "",
       },
@@ -121,23 +113,14 @@ export default Vue.extend({
   },
   watch: {
     floor_id() {
-      this.getFloors();
+      this.getRoot();
     },
   },
   created() {
-    this.getFloors();
+    this.getRoot();
   },
   methods: {
-    onChoose(event?: EventObject) {
-      console.log("Root onChoose", event?.item);
-      this.choosingItem = event?.item;
-    },
-    onUnchoose(event?: EventObject) {
-      console.log("Root onUnchoose", event?.item);
-      this.choosingItem = undefined;
-    },
-
-    getFloors() {
+    getRoot() {
       const loading = $loading.open();
       api.get
         .floors({ floor_id: this.floor_id ? Number(this.floor_id) : undefined })
@@ -146,9 +129,48 @@ export default Vue.extend({
         })
         .finally(loading.close);
     },
-    addChild(parent: components["schemas"]["FloorResponse"]) {
+    handleChoose(event?: EventObject) {
+      this.choosingItem = event?.item;
+    },
+    handleUnchoose() {
+      this.choosingItem = undefined;
+    },
+    handleChange(
+      parent: components["schemas"]["FloorResponseWithChildren"],
+      event: ChangeEventObject
+    ) {
+      // parent > child となるようにノードを付け替える
+      if (event.added) {
+        // parent.children は移動後の状態になっている
+        console.log(parent, event.added);
+        const child = event.added.element; // 移動してきた子
+        // parent > child となるようにノードを付け替える
+        this.patchFloorsNode(parent.floor_id, child.floor_id);
+      }
+      // 追加=>削除の順番にイベントが呼ばれるが、処理は追加の方でやるのでremovedイベントは捨てる
+
+      // 順番の移動(追加でもどこに追加されるかわからないのですべて更新する)
+      if (event.added || event.moved) {
+        // parent.children は移動後の状態になっている
+        // クライアント側のデータを更新
+        const floor_id_list = parent.children.map((child, index) => {
+          child.order = index + 1;
+          return child.floor_id;
+        });
+
+        // サーバ側のデータは投げっぱなしにする
+        this.patchFloorsOrder(floor_id_list);
+      }
+    },
+    patchFloorsNode(parent_id: number, child_id: number) {
+      return api.patch.floors.node({ parent_id, child_id });
+    },
+    patchFloorsOrder(floor_id_list: number[]) {
+      return api.patch.floors.order({ floor_id_list });
+    },
+    handleAddChild(parent: components["schemas"]["FloorResponseWithChildren"]) {
       $modal
-        .open<components["schemas"]["FloorResponse"]>({
+        .open<components["schemas"]["FloorResponseWithChildren"]>({
           component: FloorFormVue,
           componentProps: {
             parentId: parent.floor_id,
@@ -158,8 +180,8 @@ export default Vue.extend({
           parent.children.push(child);
         });
     },
-    pullChildren(open: boolean, parent: components["schemas"]["FloorResponse"]) {
-      if (open) {
+    handleOpen(parent: components["schemas"]["FloorResponseWithChildren"], isOpen: boolean) {
+      if (isOpen) {
         const loading = $loading.open();
         api.get
           .floors({ floor_id: parent.floor_id })
@@ -167,12 +189,7 @@ export default Vue.extend({
             this.$set(parent, "children", data.children);
           })
           .finally(loading.close);
-      } else {
-        this.$set(parent, "children", []);
       }
-    },
-    trash(floor: components["schemas"]["FloorResponse"]) {
-      this.$emit("trash", floor);
     },
   },
 });

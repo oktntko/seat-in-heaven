@@ -1,5 +1,5 @@
-import { FloorType, Prisma } from "@prisma/client";
-import { FloorsQuery } from "~/controllers/api/floors.controller";
+import { Prisma } from "@prisma/client";
+import { FloorsNodeBody } from "~/controllers/api/floors.controller";
 import { NotExistsError } from "~/middlewares/ErrorHandler";
 import log from "~/middlewares/log";
 import { FloorsRepository, ParamFloor } from "~/repositories/floors.repository";
@@ -14,7 +14,7 @@ const postFloor = async (
   log.debug("postFloor", floor);
 
   // 親を取得する
-  const parent = await FloorsRepository.findFirstFloorWithChildren({
+  const parent = await FloorsRepository.findUniqueFloorWithChildren({
     floor_id: parent_id,
   });
   if (!parent) {
@@ -45,56 +45,52 @@ const postFloor = async (
 };
 
 // # GET /api/floors
-const getFloors = async (query: FloorsQuery) => {
-  log.debug("getFloors", query);
+const getFloors = async (floor_id?: number) => {
+  log.debug("getFloors", floor_id);
 
-  const where = {};
-  if (query.floor_id) {
-    Object.assign(where, {
-      floor_id: query.floor_id,
-    });
-  } else {
-    Object.assign(where, {
-      floortype: FloorType.ROOT,
-    });
+  if (!floor_id) {
+    const floor = await FloorsRepository.findRootFloor();
+    if (!floor) {
+      throw new NotExistsError();
+    }
+    floor_id = floor.floor_id;
   }
 
-  log.debug("where", where);
-
-  const floor = await FloorsRepository.findFirstFloorWithChildren(where);
-  if (!floor) {
+  const root = await FloorsRepository.findUniqueFloorWithChildren({ floor_id });
+  if (!root) {
     throw new NotExistsError();
   }
 
+  const children = root.descendants.map((rootnode) => {
+    return {
+      floor_id: rootnode.descendant.floor_id,
+      updated_at: rootnode.descendant.updated_at,
+      floortype: rootnode.descendant.floortype,
+      floorname: rootnode.descendant.floorname,
+      order: rootnode.descendant.order,
+      children: [],
+    };
+  });
+
   // 祖先を取得する
-  const ancestors = await FloorsRepository.findAncestors(floor.floor_id);
+  const ancestors = (await FloorsRepository.findAncestors(root.floor_id)).map((rootnode) => {
+    return {
+      floor_id: rootnode.ancestor.floor_id,
+      updated_at: rootnode.ancestor.updated_at,
+      floortype: rootnode.ancestor.floortype,
+      floorname: rootnode.ancestor.floorname,
+      order: rootnode.ancestor.order,
+    };
+  });
 
   return {
-    floor_id: floor.floor_id,
-    updated_at: floor.updated_at,
-    floortype: floor.floortype,
-    floorname: floor.floorname,
-    order: floor.order,
-    ancestors: ancestors
-      .filter((node) => node.ancestor.floortype !== FloorType.ROOT)
-      .map((node) => {
-        return {
-          floor_id: node.ancestor.floor_id,
-          updated_at: node.ancestor.updated_at,
-          floortype: node.ancestor.floortype,
-          floorname: node.ancestor.floorname,
-          order: node.ancestor.order,
-        };
-      }),
-    children: floor.descendants.map((node) => {
-      return {
-        floor_id: node.descendant.floor_id,
-        updated_at: node.descendant.updated_at,
-        floortype: node.descendant.floortype,
-        floorname: node.descendant.floorname,
-        order: node.descendant.order,
-      };
-    }),
+    floor_id: root.floor_id,
+    updated_at: root.updated_at,
+    floortype: root.floortype,
+    floorname: root.floorname,
+    order: root.order,
+    children,
+    ancestors,
   };
 };
 
@@ -113,7 +109,7 @@ const putFloor = async (
 };
 
 // # GET /api/floors/:floor_id
-const getFloor = async (currentUser: CurrentUserType, floor_id?: number) => {
+const getFloor = async (currentUser: CurrentUserType, floor_id: number) => {
   log.debug("getFloor", floor_id);
 
   const floor = await FloorsRepository.findUniqueFloor({ floor_id });
@@ -133,10 +129,63 @@ const deleteFloor = async (currentUser: CurrentUserType, floor_id: number, updat
   return FloorsRepository.deleteFloor(currentUser, floor_id);
 };
 
+// # PATCH /api/floors/order
+const patchFloorsOrder = async (currentUser: CurrentUserType, floor_id_list: number[]) => {
+  log.debug("patchFloorsOrder", floor_id_list);
+
+  return Promise.all(
+    floor_id_list.map((floor_id, index) => {
+      return FloorsRepository.patchFloor(currentUser, floor_id, {
+        order: index + 1,
+      });
+    })
+  );
+};
+
+// # PATCH /api/floors/node
+const patchFloorsNode = async (currentUser: CurrentUserType, body: FloorsNodeBody) => {
+  log.debug("patchFloorsNode", body);
+
+  // 前の祖先ノードから子孫を削除する
+  const currentAncestors = await FloorsRepository.findAncestors(body.child_id);
+  const descendants = await FloorsRepository.findDescendants(body.child_id);
+  const descendant_id_list = descendants.map((descendant) => descendant.descendant_id);
+
+  await Promise.all(
+    currentAncestors
+      .filter((ancestor) => ancestor.ancestor_id !== body.child_id)
+      .map((ancestor) =>
+        FloorsRepository.deleteMany({
+          ancestor_id: ancestor.ancestor_id,
+          descendant_id: {
+            in: descendant_id_list,
+          },
+        })
+      )
+  );
+
+  // 祖先の距離は親から祖先の距離＋１してノードを登録する
+  const newAncestors = await FloorsRepository.findAncestors(body.parent_id);
+
+  const data = newAncestors.flatMap((ancestor) => {
+    return descendants.map((descendant) => {
+      return {
+        ancestor_id: ancestor.ancestor_id,
+        descendant_id: descendant.descendant_id,
+        distance: ancestor.distance + 1 + descendant.distance,
+      };
+    });
+  });
+
+  await FloorsRepository.createMany(data);
+};
+
 export const FloorsService = {
   postFloor,
   getFloors,
   putFloor,
   getFloor,
   deleteFloor,
+  patchFloorsOrder,
+  patchFloorsNode,
 };

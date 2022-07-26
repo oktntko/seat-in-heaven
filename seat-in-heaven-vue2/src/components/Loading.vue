@@ -98,6 +98,11 @@ export const $loading = {
     parent.appendChild(instance.$el);
     document.body.appendChild(parent);
 
+    instance.$on("close", () => {
+      instance.$destroy();
+      document.body.removeChild(parent);
+    });
+
     return { close: instance.close };
   },
 };

@@ -1,6 +1,7 @@
 import { FloorType } from "@prisma/client";
 import { Type } from "class-transformer";
 import {
+  IsArray,
   IsDate,
   IsIn,
   IsInt,
@@ -19,6 +20,7 @@ import {
   Get,
   JsonController,
   Params,
+  Patch,
   Post,
   Put,
   QueryParam,
@@ -27,7 +29,7 @@ import {
 import { ResponseSchema } from "routing-controllers-openapi";
 import log from "~/middlewares/log";
 import { FloorsService } from "~/services/floors.service";
-import { CurrentUserType } from "~/types";
+import { CurrentUserType, OkResponse } from "~/types";
 
 // ::: REQUEST
 export class FloorBody {
@@ -56,6 +58,19 @@ export class FloorsQuery {
   floor_id?: number;
 }
 
+export class FloorsOrderBody {
+  @IsArray()
+  @IsPositive({ each: true })
+  floor_id_list: number[];
+}
+
+export class FloorsNodeBody {
+  @IsPositive()
+  parent_id: number;
+  @IsPositive()
+  child_id: number;
+}
+
 // ::: RESPONSE
 class FloorResponse {
   @IsPositive()
@@ -79,13 +94,19 @@ class FloorResponse {
   updated_at: Date;
 }
 
-class ListFloorResponse extends FloorResponse {
+class FloorResponseWithChildren extends FloorResponse {
+  @ValidateNested({ each: true })
+  @Type(() => FloorResponse)
+  children: FloorResponse[];
+}
+
+class RootFloorResponse extends FloorResponse {
   @ValidateNested({ each: true })
   @Type(() => FloorResponse)
   ancestors: FloorResponse[];
   @ValidateNested({ each: true })
-  @Type(() => FloorResponse)
-  children: FloorResponse[];
+  @Type(() => FloorResponseWithChildren)
+  children: FloorResponseWithChildren[];
 }
 
 @JsonController()
@@ -111,14 +132,14 @@ export class FloorsController {
 
   // # GET /api/floors
   @Get("/api/floors")
-  @ResponseSchema(ListFloorResponse)
+  @ResponseSchema(RootFloorResponse)
   async getFloors(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
     @QueryParams() query: FloorsQuery
-  ): Promise<ListFloorResponse> {
+  ): Promise<RootFloorResponse> {
     log.debug(currentUser, query);
 
-    return FloorsService.getFloors(query);
+    return FloorsService.getFloors(query.floor_id);
   }
 
   // # PUT /api/floors/:floor_id
@@ -158,5 +179,33 @@ export class FloorsController {
     log.debug(currentUser);
 
     return FloorsService.deleteFloor(currentUser, path.floor_id, updated_at);
+  }
+
+  // # PATCH /api/floors/order
+  @Patch("/api/floors/order")
+  @ResponseSchema(OkResponse)
+  async patchFloorsOrder(
+    @CurrentUser({ required: true }) currentUser: CurrentUserType,
+    @Body({ required: true }) body: FloorsOrderBody
+  ): Promise<OkResponse> {
+    log.debug(currentUser);
+
+    return FloorsService.patchFloorsOrder(currentUser, body.floor_id_list).then(() => ({
+      ok: true,
+    }));
+  }
+
+  // # PATCH /api/floors/node
+  @Patch("/api/floors/node")
+  @ResponseSchema(OkResponse)
+  async patchFloorsNode(
+    @CurrentUser({ required: true }) currentUser: CurrentUserType,
+    @Body({ required: true }) body: FloorsNodeBody
+  ): Promise<OkResponse> {
+    log.debug(currentUser);
+
+    return FloorsService.patchFloorsNode(currentUser, body).then(() => ({
+      ok: true,
+    }));
   }
 }
