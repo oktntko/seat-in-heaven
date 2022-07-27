@@ -1,8 +1,6 @@
 <template>
   <Draggable
     tag="ul"
-    class="flex flex-col rounded-md border-2 border-dashed pl-4 opacity-90 transition-all"
-    :class="`${choosingItem && !isChoosingParentItem ? 'border-sky-500/50' : 'border-transparent'}`"
     :list="floor.children"
     group="tree"
     handle=".handle"
@@ -18,14 +16,17 @@
     <FloorNode
       v-for="child in floor.children"
       :key="child.floor_id"
-      class="border border-b-0 p-2 first:rounded-t-md last:rounded-b-md last:border-b"
+      class="border border-b-0 bg-white first:rounded-tl-md last:rounded-bl-md last:border-b"
+      :class="`${treeRole === 'ROOT' ? '' : 'border-r-0'}`"
+      :brothers="floor.children"
       :floor="child"
       :choosing-item="choosingItem"
+      :change="change"
+      :add="add"
+      :edit="edit"
+      :open="open"
       @choose="onChoose"
       @unchoose="onUnchoose"
-      @change="onChange"
-      @addChild="onAddChild"
-      @open="onOpen"
     >
     </FloorNode>
   </Draggable>
@@ -93,6 +94,27 @@ export default Vue.extend({
       required: false,
       default: undefined,
     },
+    treeRole: {
+      required: false,
+      type: String,
+      default: "",
+    },
+    change: {
+      required: true,
+      type: Function,
+    },
+    add: {
+      required: true,
+      type: Function,
+    },
+    edit: {
+      required: true,
+      type: Function,
+    },
+    open: {
+      required: true,
+      type: Function,
+    },
   },
   data() {
     return {
@@ -106,7 +128,7 @@ export default Vue.extend({
   },
   methods: {
     handleChange(event: ChangeEventObject) {
-      this.onChange(this.floor, event);
+      this.change(this.floor, event);
     },
 
     onChoose(event?: EventObject) {
@@ -114,15 +136,6 @@ export default Vue.extend({
     },
     onUnchoose(event?: EventObject) {
       this.$emit("unchoose", event);
-    },
-    onChange(parent: components["schemas"]["FloorResponseWithChildren"], event: ChangeEventObject) {
-      this.$emit("change", parent, event);
-    },
-    onAddChild(parent: components["schemas"]["FloorResponseWithChildren"]) {
-      this.$emit("addChild", parent);
-    },
-    onOpen(parent: components["schemas"]["FloorResponseWithChildren"], isOpen: boolean) {
-      this.$emit("open", parent, isOpen);
     },
   },
 });

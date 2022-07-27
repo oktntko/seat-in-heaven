@@ -55,6 +55,15 @@
           />
         </div>
       </div>
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          class="inline-flex min-w-[120px] items-center justify-center rounded-lg border border-gray-200 bg-white py-2.5 px-5 text-sm font-medium text-gray-900 transition-all hover:bg-blue-50 hover:text-blue-700 focus:z-10 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+        >
+          <Icon class="mx-1 h-4 w-4" icon="fa:search" />
+          検索
+        </button>
+      </div>
     </form>
 
     <!-- 検索結果 -->
@@ -63,7 +72,7 @@
         <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
           <button
             class="flex flex-row flex-nowrap items-center gap-1 text-sm"
-            @click="handleAddChild(root)"
+            @click="handleAdd(root)"
           >
             <Icon class="h-4 w-4 text-yellow-600" icon="bxs:folder-plus" />
             <span>フロアを追加する</span>
@@ -76,14 +85,14 @@
         :floor="root"
         :choosing-item="choosingItem"
         tree-role="ROOT"
+        :change="handleChange"
+        :add="handleAdd"
+        :edit="handleEdit"
+        :open="handleOpen"
         @choose="handleChoose"
         @unchoose="handleUnchoose"
-        @change="handleChange"
-        @addChild="handleAddChild"
-        @open="handleOpen"
       >
       </FloorNode>
-      <div v-else>ローディング</div>
     </div>
   </div>
 </template>
@@ -169,27 +178,44 @@ export default Vue.extend({
     patchFloorsOrder(floor_id_list: number[]) {
       return api.patch.floors.order({ floor_id_list });
     },
-    handleAddChild(parent: components["schemas"]["FloorResponseWithChildren"]) {
-      $modal
-        .open<components["schemas"]["FloorResponseWithChildren"]>({
-          component: FloorFormVue,
-          componentProps: {
-            parentId: parent.floor_id,
+    handleAdd(parent: components["schemas"]["FloorResponseWithChildren"]) {
+      $modal.open({
+        component: FloorFormVue,
+        componentProps: {
+          parentId: parent.floor_id,
+        },
+        componentEvents: {
+          added: (child: components["schemas"]["FloorResponseWithChildren"]) => {
+            parent.children.push(child);
           },
-        })
-        .then((child) => {
-          parent.children.push(child);
-        });
+        },
+      });
+    },
+    handleEdit(
+      floor: components["schemas"]["FloorResponseWithChildren"],
+      brothers: components["schemas"]["FloorResponseWithChildren"][]
+    ) {
+      const index = brothers.indexOf(floor);
+      $modal.open({
+        component: FloorFormVue,
+        componentProps: {
+          floorId: floor.floor_id,
+        },
+        componentEvents: {
+          updated: (data: components["schemas"]["FloorResponseWithChildren"]) => {
+            brothers.splice(index, 1, data);
+          },
+          deleted: () => {
+            brothers.splice(index, 1);
+          },
+        },
+      });
     },
     handleOpen(parent: components["schemas"]["FloorResponseWithChildren"], isOpen: boolean) {
       if (isOpen) {
-        const loading = $loading.open();
-        api.get
-          .floors({ floor_id: parent.floor_id })
-          .then(({ data }) => {
-            this.$set(parent, "children", data.children);
-          })
-          .finally(loading.close);
+        api.get.floors({ floor_id: parent.floor_id }).then(({ data }) => {
+          this.$set(parent, "children", data.children);
+        });
       }
     },
   },

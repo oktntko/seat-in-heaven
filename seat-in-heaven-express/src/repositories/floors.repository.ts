@@ -95,18 +95,15 @@ const patchFloor = async (
   });
 };
 
-const deleteFloor = async (currentUser: CurrentUserType, floor_id: number) => {
-  log.debug("deleteFloor", deleteFloor);
+const deleteManyFloor = async (currentUser: CurrentUserType, floor_id_list: number[]) => {
+  log.debug("deleteManyFloor", floor_id_list);
 
-  return ORM.floor.delete({
-    select: {
-      floor_id: true,
-      floorname: true,
-      floortype: true,
-      order: true,
-      updated_at: true,
+  return ORM.floor.deleteMany({
+    where: {
+      floor_id: {
+        in: floor_id_list,
+      },
     },
-    where: { floor_id },
   });
 };
 
@@ -197,7 +194,7 @@ export const FloorsRepository = {
   createFloor,
   updateFloor,
   patchFloor,
-  deleteFloor,
+  deleteManyFloor,
   findUniqueFloor,
   findRootFloor,
   findManyFloors,

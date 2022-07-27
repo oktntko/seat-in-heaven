@@ -82,10 +82,9 @@ const getFloors = async (floor_id?: number) => {
 const putFloor = async (
   currentUser: CurrentUserType,
   floor_id: number,
-  floor: Omit<ParamFloor, "order">,
+  floor: Omit<ParamFloor, "floortype" | "order">,
   updated_at: string
 ) => {
-  // TODO
   log.debug("putFloor", floor);
 
   await FloorsRepository.checkPreviousVersion({ floor_id }, updated_at);
@@ -95,7 +94,6 @@ const putFloor = async (
 
 // # GET /api/floors/:floor_id
 const getFloor = async (currentUser: CurrentUserType, floor_id: number) => {
-  // TODO
   log.debug("getFloor", floor_id);
 
   const floor = await FloorsRepository.findUniqueFloor({ floor_id });
@@ -108,12 +106,19 @@ const getFloor = async (currentUser: CurrentUserType, floor_id: number) => {
 
 // # DELETE /api/floors/:floor_id
 const deleteFloor = async (currentUser: CurrentUserType, floor_id: number, updated_at: string) => {
-  // TODO
   log.debug("deleteFloor", floor_id);
 
   await FloorsRepository.checkPreviousVersion({ floor_id }, updated_at);
 
-  return FloorsRepository.deleteFloor(currentUser, floor_id);
+  // 子孫を取得する
+  const descendants = await FloornodesRepository.findDescendants({
+    ancestor_id: floor_id,
+  });
+
+  return FloorsRepository.deleteManyFloor(currentUser, [
+    floor_id,
+    ...descendants.map((descendant) => descendant.descendant_id),
+  ]);
 };
 
 // # PATCH /api/floors/order

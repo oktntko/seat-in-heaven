@@ -49,6 +49,9 @@ export type components = {
       password: string;
     };
     FloorBody: {
+      floorname: string;
+    };
+    PostFloorBody: {
       /** @enum {string} */
       floortype: "FLOOR" | "ROOM";
       floorname: string;
@@ -182,10 +185,10 @@ export type operations = {
         };
       };
     };
-    /** FloorBody */
+    /** PostFloorBody */
     requestBody: {
       content: {
-        "application/json": components["schemas"]["FloorBody"];
+        "application/json": components["schemas"]["PostFloorBody"];
       };
     };
   };
@@ -237,7 +240,7 @@ export type operations = {
     responses: {
       200: {
         content: {
-          "application/json": components["schemas"]["FloorResponse"];
+          "application/json": components["schemas"]["OkResponse"];
         };
       };
     };

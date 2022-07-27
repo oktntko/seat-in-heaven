@@ -35,6 +35,13 @@ import { CurrentUserType, OkResponse } from "~/types";
 export class FloorBody {
   @IsNotEmpty()
   @IsString()
+  @MaxLength(50)
+  floorname: string;
+}
+
+export class PostFloorBody {
+  @IsNotEmpty()
+  @IsString()
   @IsIn([FloorType.FLOOR, FloorType.ROOM])
   floortype: FloorType;
 
@@ -116,7 +123,7 @@ export class FloorsController {
   @ResponseSchema(FloorResponse)
   async postFloor(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Body({ required: true }) body: FloorBody
+    @Body({ required: true }) body: PostFloorBody
   ): Promise<FloorResponse> {
     log.debug(currentUser, body);
 
@@ -170,15 +177,17 @@ export class FloorsController {
 
   // # DELETE /api/floors/:floor_id
   @Delete("/api/floors/:floor_id")
-  @ResponseSchema(FloorResponse)
+  @ResponseSchema(OkResponse)
   async deleteFloor(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
     @Params({ required: true }) path: FloorsPathParams,
     @QueryParam("updated_at", { required: true }) updated_at: string
-  ): Promise<FloorResponse> {
+  ): Promise<OkResponse> {
     log.debug(currentUser);
 
-    return FloorsService.deleteFloor(currentUser, path.floor_id, updated_at);
+    return FloorsService.deleteFloor(currentUser, path.floor_id, updated_at).then(() => ({
+      ok: true,
+    }));
   }
 
   // # PATCH /api/floors/order

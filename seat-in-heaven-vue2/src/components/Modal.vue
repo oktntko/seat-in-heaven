@@ -57,7 +57,7 @@ import Vue, { PropType } from "vue";
 type ModalProps = Partial<{
   component: unknown;
   componentProps: unknown;
-  componentEvents: string;
+  componentEvents: unknown;
   htmlContent: string;
   canCancel: {
     escape: boolean;

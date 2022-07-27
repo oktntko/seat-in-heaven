@@ -10,14 +10,20 @@
           <input
             id="floortype-FLOOR"
             v-model="form.floortype"
-            type="radio"
+            :type="floorId ? 'hidden' : 'radio'"
             value="FLOOR"
             class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
           />
           <label
             for="floortype-FLOOR"
-            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            class="ml-2 flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-300"
+            :class="floorId && form.floortype !== 'FLOOR' ? 'text-gray-400' : ''"
           >
+            <Icon
+              class="h-5 w-5"
+              :class="!floorId || form.floortype === 'FLOOR' ? 'text-yellow-600' : ''"
+              icon="bxs:folder"
+            />
             フロア
           </label>
         </div>
@@ -25,14 +31,20 @@
           <input
             id="floortype-ROOM"
             v-model="form.floortype"
-            type="radio"
+            :type="floorId ? 'hidden' : 'radio'"
             value="ROOM"
             class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 dark:border-gray-600 dark:bg-gray-700"
           />
           <label
             for="floortype-ROOM"
-            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            class="ml-2 flex items-center gap-1 text-sm font-medium text-gray-900 dark:text-gray-300"
+            :class="floorId && form.floortype !== 'ROOM' ? 'text-gray-400' : ''"
           >
+            <Icon
+              class="h-5 w-5"
+              :class="!floorId || form.floortype === 'ROOM' ? 'text-blue-600' : ''"
+              icon="ant-design:file-outlined"
+            />
             居室
           </label>
         </div>
@@ -85,13 +97,14 @@ import { api } from "~/repositories/api";
 export default Vue.extend({
   props: {
     floorId: {
-      type: String,
+      type: Number,
       required: false,
-      default: "",
+      default: undefined,
     },
     parentId: {
       type: Number,
-      required: true,
+      required: false,
+      default: undefined,
     },
   },
   data() {
@@ -112,8 +125,8 @@ export default Vue.extend({
     handleSubmit() {
       if (this.floorId) {
         this.putFloor(this.floorId);
-      } else {
-        this.postFloor();
+      } else if (this.parentId) {
+        this.postFloor(this.parentId);
       }
     },
     handleDelete() {
@@ -122,7 +135,7 @@ export default Vue.extend({
           .open({
             colorset: "danger",
             icon: "bx:error",
-            message: `${this.form.floorname}を削除します。この操作は取り消せません。よろしいですか？`,
+            message: `${this.form.floorname}に紐づくすべてのデータが消去されます。この操作は取り消せません。よろしいですか？`,
           })
           .then(() => {
             this.deleteFloor(this.floorId);
@@ -130,30 +143,45 @@ export default Vue.extend({
       }
     },
 
-    getFloor(floor_id: string) {
+    getFloor(floor_id: number) {
       const loading = $loading.open();
       api.get
-        .floor({ floor_id })
+        .floor({ floor_id: String(floor_id) })
         .then(({ data }) => (this.form = data))
         .finally(loading.close);
     },
-    postFloor() {
-      api.post.floor({ ...this.form, parent_id: this.parentId }).then(({ data }) => {
-        this.$emit("success", data);
-        $toast.open({ type: "success", message: "登録に成功しました" });
-      });
+    postFloor(parent_id: number) {
+      const loading = $loading.open();
+      api.post
+        .floor({ ...this.form, parent_id })
+        .then(({ data }) => {
+          this.$emit("success");
+          this.$emit("added", data);
+          $toast.open({ type: "success", message: "登録に成功しました" });
+        })
+        .finally(loading.close);
     },
-    putFloor(floor_id: string) {
-      api.put.floor({ floor_id }, { ...this.form, parent_id: this.parentId }).then(({ data }) => {
-        this.$emit("success", data);
-        $toast.open({ type: "success", message: "保存に成功しました" });
-      });
+    putFloor(floor_id: number) {
+      const loading = $loading.open();
+      api.put
+        .floor({ floor_id: String(floor_id) }, { ...this.form })
+        .then(({ data }) => {
+          this.$emit("success");
+          this.$emit("updated", data);
+          $toast.open({ type: "success", message: "保存に成功しました" });
+        })
+        .finally(loading.close);
     },
-    deleteFloor(floor_id: string) {
-      api.delete.floor({ floor_id }, this.form).then((data) => {
-        this.$emit("success", data);
-        $toast.open({ type: "success", message: "削除に成功しました" });
-      });
+    deleteFloor(floor_id: number) {
+      const loading = $loading.open();
+      api.delete
+        .floor({ floor_id: String(floor_id) }, this.form)
+        .then(() => {
+          this.$emit("success");
+          this.$emit("deleted");
+          $toast.open({ type: "success", message: "削除に成功しました" });
+        })
+        .finally(loading.close);
     },
   },
 });

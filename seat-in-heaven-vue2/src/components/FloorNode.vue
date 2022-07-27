@@ -2,8 +2,8 @@
   <div>
     <div
       v-if="treeRole !== 'ROOT'"
-      class="flex flex-row flex-nowrap items-center justify-start gap-2"
-      :class="isOpen ? 'pb-2' : ''"
+      class="flex flex-row flex-nowrap items-center justify-start gap-2 p-2"
+      :class="`${isOpen ? 'pb-2' : ''}`"
     >
       <!-- ハンドル -->
       <Icon class="handle h-5 w-5 cursor-move" icon="ic:baseline-drag-indicator" />
@@ -37,21 +37,29 @@
       <button
         v-if="isFloor && isOpen"
         class="flex flex-row flex-nowrap items-center gap-1"
-        @click="onAddChild(floor)"
+        @click="add(floor)"
       >
         <Icon class="h-5 w-5" icon="bx:folder-plus" />
+      </button>
+      <button class="flex flex-row flex-nowrap items-center gap-1" @click="handleEdit">
+        <Icon class="h-5 w-5" icon="ep:setting" />
       </button>
     </div>
     <template v-if="isFloor">
       <FloorChildren
         v-if="isOpen"
+        class="ml-4 mb-2 flex flex-col border-2 border-dashed transition-all"
+        :class="`${choosingItem && !isChoosing ? 'border-sky-500/50' : 'border-transparent'}
+                 ${treeRole === 'ROOT' ? '' : 'border-r-0'}`"
         :floor="floor"
         :choosing-item="choosingItem"
+        :tree-role="treeRole"
+        :change="change"
+        :add="add"
+        :edit="edit"
+        :open="open"
         @choose="onChoose"
         @unchoose="onUnchoose"
-        @change="onChange"
-        @addChild="onAddChild"
-        @open="onOpen"
       ></FloorChildren>
     </template>
   </div>
@@ -60,13 +68,18 @@
 <script lang="ts">
 import Vue, { PropType } from "vue";
 import { components } from "~/repositories/schema";
-import { ChangeEventObject, EventObject } from "./FloorChildren.vue";
+import { EventObject } from "./FloorChildren.vue";
 
 export default Vue.extend({
   props: {
     floor: {
       required: true,
       type: Object as PropType<components["schemas"]["FloorResponseWithChildren"]>,
+    },
+    brothers: {
+      required: false,
+      type: Array,
+      default: () => [],
     },
     treeRole: {
       required: false,
@@ -78,11 +91,28 @@ export default Vue.extend({
       required: false,
       default: undefined,
     },
+    change: {
+      required: true,
+      type: Function,
+    },
+    add: {
+      required: true,
+      type: Function,
+    },
+    edit: {
+      required: true,
+      type: Function,
+    },
+    open: {
+      required: true,
+      type: Function,
+    },
   },
   data() {
     const isOpen = this.treeRole === "ROOT";
     return {
       isOpen,
+      isChoosing: false,
     };
   },
   computed: {
@@ -90,10 +120,18 @@ export default Vue.extend({
       return this.floor.floortype !== "ROOM";
     },
   },
+  watch: {
+    choosingItem() {
+      this.isChoosing = this.choosingItem === this.$el;
+    },
+  },
   methods: {
     handleChangeOpen() {
       this.isOpen = !this.isOpen;
-      this.onOpen(this.floor, this.isOpen);
+      this.open(this.floor, this.isOpen);
+    },
+    handleEdit() {
+      this.edit(this.floor, this.brothers);
     },
 
     onChoose(event?: EventObject) {
@@ -101,15 +139,6 @@ export default Vue.extend({
     },
     onUnchoose(event?: EventObject) {
       this.$emit("unchoose", event);
-    },
-    onChange(parent: components["schemas"]["FloorResponseWithChildren"], event: ChangeEventObject) {
-      this.$emit("change", parent, event);
-    },
-    onAddChild(parent: components["schemas"]["FloorResponseWithChildren"]) {
-      this.$emit("addChild", parent);
-    },
-    onOpen(parent: components["schemas"]["FloorResponseWithChildren"], isOpen: boolean) {
-      this.$emit("open", parent, isOpen);
     },
   },
 });
