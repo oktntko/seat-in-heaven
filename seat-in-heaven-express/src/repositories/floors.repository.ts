@@ -24,6 +24,7 @@ const createFloor = async (
       floortype: true,
       order: true,
       updated_at: true,
+      updated_by: true,
     },
     data: {
       floorname: paramFloor.floorname,
@@ -61,6 +62,7 @@ const updateFloor = async (currentUser: CurrentUserType, floor_id: number, floor
       floortype: true,
       order: true,
       updated_at: true,
+      updated_by: true,
     },
     data: {
       floorname: floor.floorname,
@@ -85,6 +87,7 @@ const patchFloor = async (
       floortype: true,
       order: true,
       updated_at: true,
+      updated_by: true,
     },
     data: {
       floorname: floor.floorname,
@@ -117,6 +120,7 @@ const findUniqueFloor = async ({ floor_id }: RequireOne<Prisma.FloorWhereUniqueI
       floortype: true,
       order: true,
       updated_at: true,
+      updated_by: true,
     },
     where: { floor_id },
   });
@@ -132,6 +136,7 @@ const findRootFloor = async () => {
       floortype: true,
       order: true,
       updated_at: true,
+      updated_by: true,
     },
     where: {
       floortype: FloorType.ROOT,
@@ -149,6 +154,7 @@ const findManyFloors = async (where: Prisma.FloorWhereInput) => {
       floortype: true,
       order: true,
       updated_at: true,
+      updated_by: true,
       descendants: {
         select: {
           descendant: {
@@ -158,6 +164,7 @@ const findManyFloors = async (where: Prisma.FloorWhereInput) => {
               floortype: true,
               order: true,
               updated_at: true,
+              updated_by: true,
             },
           },
         },
@@ -167,6 +174,75 @@ const findManyFloors = async (where: Prisma.FloorWhereInput) => {
         orderBy: {
           descendant: {
             order: "asc",
+          },
+        },
+      },
+    },
+    where,
+  });
+};
+
+const findManyRooms = async (where: Prisma.FloorWhereInput) => {
+  log.info("findManyRooms");
+
+  return ORM.floor.findMany({
+    select: {
+      floor_id: true,
+      floorname: true,
+      floortype: true,
+      order: true,
+      updated_at: true,
+      updated_by: true,
+      descendants: {
+        select: {
+          descendant: {
+            select: {
+              floor_id: true,
+              floorname: true,
+              floortype: true,
+              order: true,
+              updated_at: true,
+              updated_by: true,
+              ancestors: {
+                select: {
+                  distance: true,
+                  ancestor_id: true,
+                  ancestor: {
+                    select: {
+                      floor_id: true,
+                      floorname: true,
+                      floortype: true,
+                      order: true,
+                      updated_at: true,
+                      updated_by: true,
+                    },
+                  },
+                },
+                where: {
+                  distance: {
+                    gt: 0,
+                  },
+                  ancestor: {
+                    floortype: {
+                      not: FloorType.ROOT,
+                    },
+                  },
+                },
+                orderBy: {
+                  distance: "desc",
+                },
+              },
+            },
+          },
+        },
+        where: {
+          descendant: {
+            floortype: FloorType.ROOM,
+          },
+        },
+        orderBy: {
+          descendant: {
+            floorname: "asc",
           },
         },
       },
@@ -199,4 +275,5 @@ export const FloorsRepository = {
   findRootFloor,
   findManyFloors,
   checkPreviousVersion,
+  findManyRooms,
 };

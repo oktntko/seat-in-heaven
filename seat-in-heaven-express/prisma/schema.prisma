@@ -19,6 +19,15 @@ enum FloorType {
   ROOM
 }
 
+enum ObjectType {
+  SEAT
+  ROCKER
+  MEETING_ROOM
+  BORDER
+  DOOR
+  SPACE
+}
+
 /// ユーザ
 model User {
   user_id  Int    @id @default(autoincrement())
@@ -58,8 +67,9 @@ model Floor {
   updated_at DateTime @updatedAt @db.Timestamptz(3)
   updated_by Int
 
-  descendants Floornode[] @relation("ancestors")
-  ancestors   Floornode[] @relation("descendants")
+  descendants Floornode[]  @relation("ancestors")
+  ancestors   Floornode[]  @relation("descendants")
+  objects     RoomObject[]
 
   @@index([floorname], name: "index_floorname")
   @@map("floors")
@@ -76,4 +86,21 @@ model Floornode {
 
   @@unique([ancestor_id, descendant_id])
   @@map("floornodes")
+}
+
+model RoomObject {
+  object_id  Int        @id @default(autoincrement())
+  floor_id   Int
+  objectname String     @default("") @db.VarChar(50)
+  objecttype ObjectType
+  reservable Boolean
+  width      Int
+  height     Int
+  x          Int
+  y          Int
+
+  room Floor @relation(fields: [floor_id], references: [floor_id], onDelete: Cascade)
+
+  @@index([objectname], name: "index_objectname")
+  @@map("room_objects")
 }

@@ -5,7 +5,7 @@
       <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
           <RouterLink
-            :to="{ path: `/system/floors` }"
+            :to="{ path: `/floors` }"
             class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-400"
           >
             <Icon class="mr-2 h-4 w-4" icon="fa-solid:layer-group" />
@@ -20,7 +20,7 @@
           <li v-for="ancestor in root.ancestors" :key="ancestor.floor_id">
             <RouterLink
               :to="{
-                path: `/system/floors`,
+                path: `/floors`,
                 query: { floor_id: ancestor.floor_id },
               }"
               class="flex items-center"
@@ -99,7 +99,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { ChangeEventObject, EventObject } from "~/components/FloorChildren.vue";
+import { ChangeEventObject, EventObject } from "~/pages/floors/components/FloorChildren.vue";
 import { $loading } from "~/components/Loading.vue";
 import { $modal } from "~/components/Modal.vue";
 import { api } from "~/repositories/api";
@@ -109,11 +109,13 @@ import FloorFormVue from "./components/FloorForm.vue";
 export default Vue.extend({
   beforeRouteUpdate(to, from, next) {
     this.floor_id = to.query.floor_id as string | undefined;
+    console.log(this.floor_id);
     next();
   },
   data() {
+    const floor_id = this.$route.query.floor_id as string | undefined;
     return {
-      floor_id: undefined as string | undefined,
+      floor_id,
       choosingItem: undefined as HTMLElement | undefined,
       root: undefined as components["schemas"]["RootFloorResponse"] | undefined,
       form: {

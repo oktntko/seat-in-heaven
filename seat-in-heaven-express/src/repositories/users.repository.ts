@@ -24,6 +24,7 @@ const createUser = async (currentUser: CurrentUserType, user: ParamUser) => {
       username: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     data: {
       email: user.email,
@@ -46,6 +47,7 @@ const updateUser = async (currentUser: CurrentUserType, user_id: number, user: P
       username: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     data: {
       email: user.email,
@@ -72,6 +74,7 @@ const patchUser = async (
       username: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     data: {
       email: user.email,
@@ -94,6 +97,7 @@ const deleteUser = async (currentUser: CurrentUserType, user_id: number) => {
       username: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     where: { user_id },
   });
@@ -109,6 +113,7 @@ const findUniqueUser = async ({ user_id, email }: RequireOne<Prisma.UserWhereUni
       username: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     where: user_id != null ? { user_id } : { email },
   });
@@ -128,6 +133,7 @@ const findUniqueUserPassword = async ({
       password: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     where: user_id != null ? { user_id } : { email },
   });
@@ -151,6 +157,7 @@ const findManyUsers = async (where: Prisma.UserWhereInput, pager: Pager) => {
       username: true,
       role: true,
       updated_at: true,
+      updated_by: true,
     },
     where,
     take: pager.limit,

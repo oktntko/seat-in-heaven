@@ -21,7 +21,7 @@ const getSession = async (sid: string) => {
       return null;
     } else {
       return {
-        cookie: data.cookie,
+        // cookie: data.cookie,
         user_id: data.user_id,
       };
     }
@@ -34,7 +34,7 @@ const postSession = async (sid: string, session: SessionData) => {
   return SessionsRepository.upsertSession({
     session_key: sid,
     data: JSON.stringify({
-      cookie: session.cookie,
+      // cookie: session.cookie,
       user_id: session.user_id ?? null,
     }),
   });

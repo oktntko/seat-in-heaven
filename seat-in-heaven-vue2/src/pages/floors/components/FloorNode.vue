@@ -7,7 +7,7 @@
     >
       <!-- ハンドル -->
       <Icon class="handle h-5 w-5 cursor-move" icon="ic:baseline-drag-indicator" />
-      <!-- フロア or ルーム -->
+      <!-- フロア or 居室 -->
       <template v-if="isFloor">
         <button type="button" @click="handleChangeOpen">
           <Icon
@@ -23,7 +23,7 @@
       <RouterLink
         v-if="isFloor"
         :to="{
-          path: `/system/floors`,
+          path: `/floors`,
           query: { floor_id: floor.floor_id },
         }"
         class="flex-grow cursor-pointer truncate p-1 text-blue-700 hover:text-blue-900"

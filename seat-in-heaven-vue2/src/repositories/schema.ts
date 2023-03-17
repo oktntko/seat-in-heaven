@@ -24,6 +24,15 @@ export type paths = {
   "/api/floors/node": {
     patch: operations["FloorsController.patchFloorsNode"];
   };
+  "/api/rooms": {
+    get: operations["RoomsController.getRooms"];
+    post: operations["RoomsController.postFloor"];
+  };
+  "/api/rooms/{room_id}": {
+    get: operations["RoomsController.getFloor"];
+    put: operations["RoomsController.putFloor"];
+    delete: operations["RoomsController.deleteFloor"];
+  };
   "/api/users": {
     get: operations["UsersController.getUsers"];
     post: operations["UsersController.postUser"];
@@ -96,6 +105,21 @@ export type components = {
       floorname: string;
       order: number;
       updated_at: string;
+    };
+    RoomsQuery: {
+      keyword?: string;
+    };
+    RoomFloorResponse: {
+      ancestors: components["schemas"]["FloorResponse"][];
+      floor_id: number;
+      /** @enum {string} */
+      floortype: "FLOOR" | "ROOM";
+      floorname: string;
+      order: number;
+      updated_at: string;
+    };
+    ListRoomFloorResponse: {
+      rooms: components["schemas"]["RoomFloorResponse"][];
     };
     UserBody: {
       /** Format: email */
@@ -272,6 +296,88 @@ export type operations = {
     requestBody: {
       content: {
         "application/json": components["schemas"]["FloorsNodeBody"];
+      };
+    };
+  };
+  "RoomsController.getRooms": {
+    parameters: {
+      query: {
+        keyword?: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["ListRoomFloorResponse"];
+        };
+      };
+    };
+  };
+  "RoomsController.postFloor": {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+    /** PostFloorBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PostFloorBody"];
+      };
+    };
+  };
+  "RoomsController.getFloor": {
+    parameters: {
+      path: {
+        room_id: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+  };
+  "RoomsController.putFloor": {
+    parameters: {
+      path: {
+        room_id: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["FloorResponse"];
+        };
+      };
+    };
+    /** FloorBody */
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FloorBody"] & {
+          updated_at: string;
+        };
+      };
+    };
+  };
+  "RoomsController.deleteFloor": {
+    parameters: {
+      path: {
+        room_id: string;
+      };
+      query: {
+        updated_at: string;
+      };
+    };
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["OkResponse"];
+        };
       };
     };
   };

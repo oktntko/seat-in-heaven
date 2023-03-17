@@ -163,7 +163,7 @@ export default Vue.extend({
     postUser() {
       api.post.user(this.form).then(({ data }) => {
         $toast.open({ type: "success", message: "登録に成功しました" });
-        this.$router.replace(`/system/users/${data.user_id}`);
+        this.$router.replace(`/users/${data.user_id}`);
       });
     },
     putUser(user_id: string) {
@@ -175,7 +175,7 @@ export default Vue.extend({
     deleteUser(user_id: string) {
       api.delete.user({ user_id }, this.form).then(() => {
         $toast.open({ type: "success", message: "削除に成功しました" });
-        this.$router.replace(`/system/users`);
+        this.$router.replace(`/users`);
       });
     },
   },

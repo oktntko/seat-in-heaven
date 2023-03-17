@@ -20,8 +20,6 @@ import {
   Get,
   JsonController,
   Params,
-  Patch,
-  Post,
   Put,
   QueryParam,
   QueryParams,
@@ -118,27 +116,8 @@ class RootFloorResponse extends FloorResponse {
 
 @JsonController()
 export class FloorsController {
-  // # POST /api/floors
-  @Post("/api/floors")
-  @ResponseSchema(FloorResponse)
-  async postFloor(
-    @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Body({ required: true }) body: PostFloorBody
-  ): Promise<FloorResponse> {
-    log.debug(currentUser, body);
-
-    return FloorsService.postFloor(
-      currentUser,
-      {
-        floortype: body.floortype,
-        floorname: body.floorname,
-      },
-      body.parent_id
-    );
-  }
-
-  // # GET /api/floors
-  @Get("/api/floors")
+  // # GET /api/rooms_objects
+  @Get("/api/rooms_objects")
   @ResponseSchema(RootFloorResponse)
   async getFloors(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
@@ -149,8 +128,8 @@ export class FloorsController {
     return FloorsService.getFloors(query.floor_id);
   }
 
-  // # PUT /api/floors/:floor_id
-  @Put("/api/floors/:floor_id")
+  // # PUT /api/rooms_objects/:floor_id
+  @Put("/api/rooms_objects/:floor_id")
   @ResponseSchema(FloorResponse)
   async putFloor(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
@@ -163,8 +142,8 @@ export class FloorsController {
     return FloorsService.putFloor(currentUser, path.floor_id, body, updated_at);
   }
 
-  // # GET /api/floors/:floor_id
-  @Get("/api/floors/:floor_id")
+  // # GET /api/rooms_objects/:floor_id
+  @Get("/api/rooms_objects/:floor_id")
   @ResponseSchema(FloorResponse)
   async getFloor(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
@@ -175,8 +154,8 @@ export class FloorsController {
     return FloorsService.getFloor(currentUser, path.floor_id);
   }
 
-  // # DELETE /api/floors/:floor_id
-  @Delete("/api/floors/:floor_id")
+  // # DELETE /api/rooms_objects/:floor_id
+  @Delete("/api/rooms_objects/:floor_id")
   @ResponseSchema(OkResponse)
   async deleteFloor(
     @CurrentUser({ required: true }) currentUser: CurrentUserType,
@@ -186,34 +165,6 @@ export class FloorsController {
     log.debug(currentUser);
 
     return FloorsService.deleteFloor(currentUser, path.floor_id, updated_at).then(() => ({
-      ok: true,
-    }));
-  }
-
-  // # PATCH /api/floors/order
-  @Patch("/api/floors/order")
-  @ResponseSchema(OkResponse)
-  async patchFloorsOrder(
-    @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Body({ required: true }) body: FloorsOrderBody
-  ): Promise<OkResponse> {
-    log.debug(currentUser);
-
-    return FloorsService.patchFloorsOrder(currentUser, body.floor_id_list).then(() => ({
-      ok: true,
-    }));
-  }
-
-  // # PATCH /api/floors/node
-  @Patch("/api/floors/node")
-  @ResponseSchema(OkResponse)
-  async patchFloorsNode(
-    @CurrentUser({ required: true }) currentUser: CurrentUserType,
-    @Body({ required: true }) body: FloorsNodeBody
-  ): Promise<OkResponse> {
-    log.debug(currentUser);
-
-    return FloorsService.patchFloorsNode(currentUser, body).then(() => ({
       ok: true,
     }));
   }

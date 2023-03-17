@@ -140,24 +140,75 @@ const floors = {
   },
 };
 
+const rooms = {
+  get: {
+    rooms: async (query: paths["/api/rooms"]["get"]["parameters"]["query"]) => {
+      return client.get<
+        paths["/api/rooms"]["get"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/rooms`, {
+        params: query,
+        paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "indices" }),
+      });
+    },
+    room: async (path: paths["/api/rooms/{room_id}"]["get"]["parameters"]["path"]) => {
+      return client.get<
+        paths["/api/rooms/{room_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/rooms/${path.room_id}`);
+    },
+  },
+  post: {
+    rooms: async (
+      body: paths["/api/rooms"]["post"]["requestBody"]["content"]["application/json"]
+    ) => {
+      return client.post<
+        paths["/api/rooms"]["post"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/rooms`, body);
+    },
+  },
+  put: {
+    rooms: async (
+      path: paths["/api/rooms/{room_id}"]["put"]["parameters"]["path"],
+      body: paths["/api/rooms/{room_id}"]["put"]["requestBody"]["content"]["application/json"]
+    ) => {
+      return client.put<
+        paths["/api/rooms/{room_id}"]["put"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/rooms/${path.room_id}`, body);
+    },
+  },
+  delete: {
+    rooms: async (
+      path: paths["/api/rooms/{room_id}"]["delete"]["parameters"]["path"],
+      query: paths["/api/rooms/{room_id}"]["delete"]["parameters"]["query"]
+    ) => {
+      return client.delete<
+        paths["/api/rooms/{room_id}"]["delete"]["responses"]["200"]["content"]["application/json"]
+      >(`/api/rooms/${path.room_id}`, { params: query });
+    },
+  },
+};
+
 export const api = {
   get: {
     ...auth.get,
     ...floors.get,
+    ...rooms.get,
     ...users.get,
   },
   post: {
     ...auth.post,
     ...floors.post,
+    ...rooms.post,
     ...users.post,
   },
   put: {
     ...users.put,
     ...floors.put,
+    ...rooms.put,
   },
   delete: {
     ...auth.delete,
     ...floors.delete,
+    ...rooms.delete,
     ...users.delete,
   },
   patch: {

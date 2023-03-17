@@ -25,6 +25,7 @@ import {
   Put,
   QueryParam,
   QueryParams,
+  Session,
 } from "routing-controllers";
 import { ResponseSchema } from "routing-controllers-openapi";
 import { transformerEmptyToUndefined } from "~/libs/transformers";
@@ -128,6 +129,13 @@ export class UsersController {
     return UsersService.postUser(currentUser, body);
   }
 
+  // # GET /api/users
+  @Get("/api")
+  async getAAA(@Session() session: any) {
+    log.debug("/api", session);
+
+    return { ok: true };
+  }
   // # GET /api/users
   @Get("/api/users")
   @ResponseSchema(ListUserResponse)

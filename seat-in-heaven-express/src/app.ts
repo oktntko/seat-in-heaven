@@ -40,6 +40,7 @@ useExpressServer(app, {
   controllers: [
     controllers.AuthController,
     controllers.FloorsController,
+    controllers.RoomsController,
     controllers.UsersController,
     controllers.OpenapiController,
   ],
@@ -48,9 +49,6 @@ useExpressServer(app, {
     paramOptions: {
       required: true, // with this option, argument will be required by default
     },
-  },
-  currentUserChecker: async (action: Action) => {
-    return SessionsService.getSession(action.request.sessionID);
   },
 });
 

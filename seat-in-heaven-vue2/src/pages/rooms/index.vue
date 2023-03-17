@@ -6,14 +6,14 @@
         <li class="inline-flex items-center">
           <p class="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-400">
             <Icon class="mr-2 h-4 w-4" icon="clarity:users-solid" />
-            ユーザ管理
+            居室管理
           </p>
         </li>
         <li>
           <div class="flex items-center">
             <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
             <p class="ml-1 text-sm font-medium text-gray-700 dark:text-gray-400 md:ml-2">
-              ユーザ一覧
+              居室を探す
             </p>
           </div>
         </li>
@@ -21,7 +21,7 @@
     </nav>
 
     <!-- フィルタ -->
-    <form class="mb-8 flex flex-wrap gap-8 px-8" @submit.prevent="getUsers">
+    <form class="mb-8 flex flex-wrap gap-8 px-8" @submit.prevent="getRooms">
       <div class="flex w-96 items-center">
         <label for="keyword" class="sr-only">Search</label>
         <div class="relative w-full">
@@ -36,50 +36,6 @@
             placeholder="キーワード"
             maxlength="100"
           />
-        </div>
-      </div>
-      <div class="flex">
-        <div class="mr-4 flex items-center">
-          <input
-            id="roles-SYSTEM_ADMIN"
-            v-model="form.roles"
-            type="checkbox"
-            value="SYSTEM_ADMIN"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-          />
-          <label
-            for="roles-SYSTEM_ADMIN"
-            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-          >
-            システム管理者
-          </label>
-        </div>
-        <div class="mr-4 flex items-center">
-          <input
-            id="roles-LIMITED_ADMIN"
-            v-model="form.roles"
-            type="checkbox"
-            value="LIMITED_ADMIN"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-          />
-          <label
-            for="roles-LIMITED_ADMIN"
-            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-          >
-            フロア責任者
-          </label>
-        </div>
-        <div class="mr-4 flex items-center">
-          <input
-            id="roles-USER"
-            v-model="form.roles"
-            type="checkbox"
-            value="USER"
-            class="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-          />
-          <label for="roles-USER" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-            一般ユーザ
-          </label>
         </div>
       </div>
       <div class="flex justify-end">
@@ -97,18 +53,36 @@
     <div class="mb-8">
       <vxe-table :data="table.data">
         <vxe-column type="seq" width="72" align="right"></vxe-column>
-        <vxe-column field="email" title="メールアドレス">
+        <vxe-column field="favorite" width="72" title=""> </vxe-column>
+        <vxe-column field="path" title="パス">
           <template #default="{ row }">
-            <RouterLink
-              :to="`/system/users/${row.user_id}`"
-              class="text-blue-700 hover:text-blue-800"
-            >
-              {{ row.email }}
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+              <li v-for="(ancestor, i) in row.ancestors" :key="ancestor.floor_id">
+                <RouterLink
+                  :to="{
+                    path: `/floors`,
+                    query: { floor_id: ancestor.floor_id },
+                  }"
+                  class="flex items-center"
+                >
+                  <Icon v-show="i" class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
+                  <p
+                    class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
+                  >
+                    {{ ancestor.floorname }}
+                  </p>
+                </RouterLink>
+              </li>
+            </ol>
+          </template>
+        </vxe-column>
+        <vxe-column field="floorname" title="居室名">
+          <template #default="{ row }">
+            <RouterLink :to="`/rooms/${row.floor_id}`" class="text-blue-700 hover:text-blue-800">
+              {{ row.floorname }}
             </RouterLink>
           </template>
         </vxe-column>
-        <vxe-column field="username" title="ユーザ名"></vxe-column>
-        <vxe-column field="role" title="ロール"></vxe-column>
         <template #empty>
           <div
             class="border-t border-b border-yellow-500 bg-yellow-100 px-4 py-3 text-yellow-700"
@@ -141,17 +115,6 @@
         <template #right> </template>
       </vxe-pager>
     </div>
-
-    <div class="flex justify-end">
-      <RouterLink
-        to="/system/users/add"
-        type="button"
-        class="inline-flex min-w-[120px] items-center justify-center rounded-lg border border-gray-200 bg-white py-2.5 px-5 text-sm font-medium text-gray-900 transition-all hover:bg-blue-50 hover:text-blue-700 focus:z-10 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-      >
-        <Icon class="mx-1 h-4 w-4" icon="fluent:add-12-filled" />
-        新規追加
-      </RouterLink>
-    </div>
   </div>
 </template>
 
@@ -165,11 +128,10 @@ export default Vue.extend({
     return {
       form: {
         keyword: "",
-        roles: [] as ("SYSTEM_ADMIN" | "LIMITED_ADMIN" | "USER")[],
       },
       table: {
         loading: true,
-        data: [] as components["schemas"]["UserBody"][],
+        data: [] as components["schemas"]["RoomFloorResponse"][],
         total: 0,
         pageSize: 20,
         currentPage: 1,
@@ -185,26 +147,24 @@ export default Vue.extend({
     },
   },
   created() {
-    this.getUsers();
+    this.getRooms();
   },
   methods: {
-    getUsers() {
+    getRooms() {
       this.table.loading = true;
       api.get
-        .users({ ...this.form, limit: this.limit, offset: this.offset })
+        .rooms({ ...this.form })
         .then(({ data }) => {
-          this.table.data = data.users;
-          this.table.total = data.total;
+          this.table.data = data.rooms;
+          this.table.total = data.rooms.length;
         })
         .finally(() => (this.table.loading = false));
     },
     handlePageChange(param: { type: "size" | "current"; pageSize: number; currentPage: number }) {
       this.table.currentPage = param.currentPage;
       this.table.pageSize = param.pageSize;
-      this.getUsers();
+      this.getRooms();
     },
   },
 });
 </script>
-
-<style scoped></style>

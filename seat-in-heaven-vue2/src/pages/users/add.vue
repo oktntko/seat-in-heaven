@@ -10,7 +10,7 @@
           </p>
         </li>
         <li>
-          <RouterLink to="/system/users" class="flex items-center">
+          <RouterLink to="/users" class="flex items-center">
             <Icon class="h-4 w-4 text-gray-400" icon="el:chevron-right" />
             <p
               class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-400 dark:hover:text-white md:ml-2"
@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import UserFormVue from "~/pages/system/users/components/UserForm.vue";
+import UserFormVue from "~/pages/users/components/UserForm.vue";
 
 export default Vue.extend({
   components: {

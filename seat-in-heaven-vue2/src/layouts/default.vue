@@ -98,20 +98,26 @@ export default Vue.extend({
           ],
         },
         {
-          block_title: "フロア管理",
-          menu: [],
+          block_title: "居室管理",
+          menu: [
+            {
+              title: "居室を探す",
+              link: "/rooms",
+              icon: "fa:search",
+            },
+          ],
         },
         {
           block_title: "システム管理",
           menu: [
             {
               title: "ユーザ管理",
-              link: "/system/users",
+              link: "/users",
               icon: "clarity:users-solid",
             },
             {
               title: "フロア管理",
-              link: "/system/floors",
+              link: "/floors",
               icon: "fa-solid:layer-group",
             },
           ],
